@@ -47,6 +47,7 @@ app.use(bodyParser.urlencoded({
 })); // Parse URL-encoded bodies
 app.use(bodyParser.raw()); // Parse raw binary data
 app.use(multer().single('file'));
+app.use(multer().single('filename'));
 
 // API Endpoint to Upload a File
 app.post('/upload/profile-picture', async (req, res) => {
