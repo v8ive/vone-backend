@@ -57,15 +57,15 @@ app.post('/upload/profile-picture', async (req, res) => {
             Key: oldImageUrl
         };
 
-        const exists = await s3.headObject(params).promise()
-            .then(() => true) // Object exists
-            .catch(err => {
-                if (err.code === 'NotFound') {
-                    // Old image doesn't exist, proceed normally
-                    return false;
-                }
-                throw err; // Unexpected error
-            });
+        // const exists = await s3.headObject(params).promise()
+        //     .then(() => true) // Object exists
+        //     .catch(err => {
+        //         if (err.code === 'NotFound') {
+        //             // Old image doesn't exist, proceed normally
+        //             return false;
+        //         }
+        //         throw err; // Unexpected error
+        //     });
 
         // 2. Delete old image if it exists
         // if (exists) {
