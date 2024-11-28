@@ -18,6 +18,14 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
+s3.listBuckets((err, data) => {
+    if (err) {
+        console.error("Error:", err);
+    } else {
+        console.log("Buckets:", data.Buckets);
+    }
+});
+
 // Configure Logging
 const logger = winston.createLogger({
     level: 'info',
