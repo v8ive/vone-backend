@@ -49,7 +49,7 @@ app.use(bodyParser.raw()); // Parse raw binary data
 // API Endpoint to Upload a File
 app.post('/upload/profile-picture', async (req, res) => {
     try {
-        console.log('Received file data:', req.body);
+        console.log('Received file data:', req);
         if (!req.body.file) {
             logger.error('No file data provided');
             return res.status(400).json({ error: 'No file data provided' });
