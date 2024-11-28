@@ -47,7 +47,6 @@ app.use(bodyParser.urlencoded({
 })); // Parse URL-encoded bodies
 app.use(bodyParser.raw()); // Parse raw binary data
 app.use(multer().single('file'));
-app.use(multer().single('filename'));
 
 // API Endpoint to Upload a File
 app.post('/upload/profile-picture', async (req, res) => {
@@ -63,7 +62,7 @@ app.post('/upload/profile-picture', async (req, res) => {
         const fileBuffer = req.file.buffer;
         const params = {
             Bucket: 'vone-bucket',
-            Key: `profile_picture/${req.filename}`,
+            Key: `profile_picture/${req.body.filename}`,
             // Key: `profile_picture/${Date.now()}-${req.file.originalname}`,
             Body: fileBuffer,
             ACL: 'public-read' // Make the file public
