@@ -90,6 +90,9 @@ app.post('/users', async (req, res) => {
     try {
         const { firebaseUid, username } = req.body;
 
+        // Log user creation attempt
+        logger.info('User creation request received:', { firebaseUid, username });
+
         // Verify Firebase UID (replace with your verification logic)
         // const verified = await verifyFirebaseUid(firebaseUid);
         // if (!verified) {
@@ -97,14 +100,15 @@ app.post('/users', async (req, res) => {
         // }
 
         const userRef = db.ref('users/' + firebaseUid);
-        userRef.set({
+        await userRef.set({
             username,
             createdAt: admin.database.ServerValue.TIMESTAMP // Server-side timestamp
         });
 
+        logger.info(`User created successfully: ${firebaseUid}`); // Log successful creation with UID
         res.json({ message: 'User created successfully' });
     } catch (err) {
-        console.error('Error creating user:', err);
+        logger.error('Error creating user:', err);
         res.status(500).json({ error: 'Failed to create user' });
     }
 });
