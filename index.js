@@ -55,21 +55,14 @@ app.post('/upload/profile-picture', async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
-        const originalFilename = req.file.originalname;
-        
         if (!req.body.filename) {
             return res.status(400).json({ error: 'No file name uploaded' });
         }
-        const filename = req.body.filename || originalFilename;
-
-        const extension = path.extname(originalFilename);
-        const finalFilename = `${filename}${extension}`;
-        console.log('finalFilename', finalFilename);
 
         const fileBuffer = req.file.buffer;
         const params = {
             Bucket: 'vone-bucket',
-            Key: `profile_picture/${finalFilename}`,
+            Key: `profile_picture/${req.body.filename}`,
             // Key: `profile_picture/${Date.now()}-${req.file.originalname}`,
             Body: fileBuffer,
             ACL: 'public-read' // Make the file public
