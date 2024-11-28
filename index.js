@@ -36,7 +36,12 @@ app.use(bodyParser.json());
 // API Endpoint to Upload a File
 app.post('/upload/profile-picture', async (req, res) => {
     try {
-        const fileBuffer = Buffer.from(req.body.file, 'base64'); // Assuming file is sent as base64 encoded string
+        if (!req.body.file) {
+            logger.error('No file data provided');
+            return res.status(400).json({ error: 'No file data provided' });
+        }
+
+        const fileBuffer = Buffer.from(req.body.file, 'base64');
         const params = {
             Bucket: 'vone-bucket',
             Key: `profile_picture/${Date.now()}-${req.body.filename}`,
