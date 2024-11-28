@@ -3,7 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const AWS = require('aws-sdk');
 const winston = require('winston'); // Logging library
-const multer = require('multer');  // For handling file uploads
+const multer = require('multer');  // For handling file uploads
 
 require('dotenv').config();
 
@@ -13,19 +13,11 @@ const port = process.env.PORT || 3000;
 // Configure AWS S3
 AWS.config.update({
     accessKeyId: process.env.AWS_ACCESS_KEY,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY,
     region: 'us-east-2' // Replace with your region
 });
 
 const s3 = new AWS.S3();
-
-s3.listBuckets((err, data) => {
-    if (err) {
-        console.error("Error:", err);
-    } else {
-        console.log("Buckets:", data.Buckets);
-    }
-});
 
 // Configure Logging
 const logger = winston.createLogger({
@@ -33,7 +25,7 @@ const logger = winston.createLogger({
     format: winston.format.json(),
     transports: [
         new winston.transports.Console(),
-        // Optionally 1  add a file transport for persistent logs:
+        // Optionally add a file transport for persistent logs:
         // new winston.transports.File({ filename: 'your_app.log' })
     ]
 });
@@ -41,17 +33,13 @@ const logger = winston.createLogger({
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-    extended:
-        true
-})); // Parse URL-encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(bodyParser.raw()); // Parse raw binary data
 app.use(multer().single('file'));
 
-// API Endpoint to Upload a File
+// API Endpoint to Upload a Profile Picture
 app.post('/upload/profile-picture', async (req, res) => {
     try {
-
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
@@ -60,15 +48,44 @@ app.post('/upload/profile-picture', async (req, res) => {
         }
 
         const fileBuffer = req.file.buffer;
+        const newFilename = `profile_picture/${req.body.filename}`; // Assuming filename is unique
+
+        // 1. Check if an old image exists
+        const oldImageUrl = `profile_picture/${req.body.oldFilename}`; // Assuming old filename is provided
         const params = {
             Bucket: 'vone-bucket',
-            Key: `profile_picture/${req.body.filename}`,
-            // Key: `profile_picture/${Date.now()}-${req.file.originalname}`,
+            Key: oldImageUrl
+        };
+
+        const exists = await s3.headObject(params).promise()
+            .then(() => true) // Object exists
+            .catch(err => {
+                if (err.code === 'NotFound') {
+                    // Old image doesn't exist, proceed normally
+                    return false;
+                }
+                throw err; // Unexpected error
+            });
+
+        // 2. Delete old image if it exists
+        if (exists) {
+            const deleteParams = {
+                Bucket: 'vone-bucket',
+                Key: oldImageUrl
+            };
+            await s3.deleteObject(deleteParams).promise();
+            logger.info('Deleted old profile picture:', oldImageUrl);
+        }
+
+        // 3. Upload the new image
+        const uploadParams = {
+            Bucket: 'vone-bucket',
+            Key: newFilename,
             Body: fileBuffer,
             ACL: 'public-read' // Make the file public
         };
 
-        const data = await s3.upload(params).promise();
+        const data = await s3.upload(uploadParams).promise();
         logger.info('File uploaded successfully', { url: data.Location });
         res.json({ url: data.Location });
     } catch (err) {
