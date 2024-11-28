@@ -51,16 +51,19 @@ app.use(multer().single('file'));
 // API Endpoint to Upload a File
 app.post('/upload/profile-picture', async (req, res) => {
     try {
-        console.log('Received file data:', req.file);
 
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
+        }
+        if (!req.filename) {
+            return res.status(400).json({ error: 'No file name uploaded' });
         }
 
         const fileBuffer = req.file.buffer;
         const params = {
             Bucket: 'vone-bucket',
-            Key: `profile_picture/${Date.now()}-${req.file.originalname}`,
+            Key: `profile_picture/${req.filename}`,
+            // Key: `profile_picture/${Date.now()}-${req.file.originalname}`,
             Body: fileBuffer,
             ACL: 'public-read' // Make the file public
         };
