@@ -3,6 +3,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
+const { logger } = require('./modules/logger');
+
 const multer = require('multer');  // For handling file uploads
 
 const usersRouter = require('./routes/users');
