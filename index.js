@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const AWS = require('aws-sdk');
 const winston = require('winston'); // Logging library
+const multer = require('multer');  // For handling file uploads
 
 require('dotenv').config();
 
@@ -45,20 +46,21 @@ app.use(bodyParser.urlencoded({
         true
 })); // Parse URL-encoded bodies
 app.use(bodyParser.raw()); // Parse raw binary data
+app.use(multer().single('file'));
 
 // API Endpoint to Upload a File
 app.post('/upload/profile-picture', async (req, res) => {
     try {
-        console.log('Received file data:', req);
-        if (!req.body.file) {
-            logger.error('No file data provided');
-            return res.status(400).json({ error: 'No file data provided' });
+        console.log('Received file data:', req.file);
+
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const fileBuffer = Buffer.from(req.body.file, 'base64');
+        const fileBuffer = req.file.buffer;
         const params = {
             Bucket: 'vone-bucket',
-            Key: `profile_picture/${Date.now()}-${req.body.filename}`,
+            Key: `profile_picture/${Date.now()}-${req.file.originalname}`,
             Body: fileBuffer
         };
 
