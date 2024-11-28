@@ -55,7 +55,7 @@ app.post('/upload/profile-picture', async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
-        if (!req.filename) {
+        if (!req.body.filename) {
             return res.status(400).json({ error: 'No file name uploaded' });
         }
 
