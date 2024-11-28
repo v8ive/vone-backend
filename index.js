@@ -35,6 +35,7 @@ app.use(bodyParser.json());
 
 // API Endpoint to Upload a File
 app.post('/upload/profile-picture', async (req, res) => {
+    console.log(req.body);
     try {
         if (!req.body.file) {
             logger.error('No file data provided');
