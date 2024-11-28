@@ -19,14 +19,6 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
-s3.listBuckets((err, data) => {
-    if (err) {
-        console.error("Error:", err);
-    } else {
-        console.log("Buckets:", data.Buckets);
-    }
-});
-
 // Configure Logging
 const logger = winston.createLogger({
     level: 'info',
@@ -48,39 +40,44 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.raw()); // Parse raw binary data
 app.use(multer().single('file'));
 
-// API Endpoint to Upload a File
-app.post('/upload/profile-picture', async (req, res) => {
-    try {
-
-        if (!req.file) {
-            return res.status(400).json({ error: 'No file uploaded' });
-        }
-        if (!req.body.filename) {
-            return res.status(400).json({ error: 'No file name uploaded' });
-        }
-
-        const originalFilename = req.file.originalname;
-        const filename = req.body.filename || originalFilename;
-        const extension = path.extname(originalFilename);
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        const filename
+            = req.body.filename || file.originalname;
+        const extension = path.extname(filename);
         const finalFilename = `${filename}${extension}`;
-
-        const fileBuffer = req.file.buffer;
-        const params = {
-            Bucket: 'vone-bucket',
-            Key: `profile_picture/${finalFilename}`,
-            // Key: `profile_picture/${Date.now()}-${req.file.originalname}`,
-            Body: fileBuffer,
-            ACL: 'public-read' // Make the file public
-        };
-
-        const data = await s3.upload(params).promise();
-        logger.info('File uploaded successfully', { url: data.Location });
-        res.json({ url: data.Location });
-    } catch (err) {
-        logger.error('Error uploading file:', err);
-        res.status(500).json({ error: 'Error uploading file' });
+        cb(null, finalFilename);
     }
 });
+
+const upload = multer({ storage: storage });
+
+app.post('/upload/profile-picture', upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                error: 'No file uploaded' });
+    }
+
+    const fileBuffer = req.file.buffer;
+
+            const params = {
+                Bucket: 'vone-bucket',
+                Key: `profile_picture/${req.file.filename}`,
+                Body: fileBuffer,
+                ACL: 'public-read'
+            };
+
+            const data = await s3.upload(params).promise();
+            res.json({ url: data.Location });
+        } catch (err) {
+            console.error('Error uploading file:', err);
+            res.status(500).json({ error: 'Error uploading file' });
+        }
+    });
 
 // ... other API endpoints for downloading, deleting, etc.
 
