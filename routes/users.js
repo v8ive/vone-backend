@@ -3,7 +3,7 @@ const router = express.Router();
 const { db } = require('../modules/database');
 const { logger } = require('../modules/logger');
 
-app.post('/', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { firebaseUid, username } = req.body;
 
