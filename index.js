@@ -68,14 +68,14 @@ app.post('/upload/profile-picture', async (req, res) => {
             });
 
         // 2. Delete old image if it exists
-        if (exists) {
-            const deleteParams = {
-                Bucket: 'vone-bucket',
-                Key: oldImageUrl
-            };
-            await s3.deleteObject(deleteParams).promise();
-            logger.info('Deleted old profile picture:', oldImageUrl);
-        }
+        // if (exists) {
+        //     const deleteParams = {
+        //         Bucket: 'vone-bucket',
+        //         Key: oldImageUrl
+        //     };
+        //     await s3.deleteObject(deleteParams).promise();
+        //     logger.info('Deleted old profile picture:', oldImageUrl);
+        // }
 
         // 3. Upload the new image
         const uploadParams = {
