@@ -32,11 +32,16 @@ const logger = winston.createLogger({
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+    extended:
+        true
+})); // Parse URL-encoded bodies
+app.use(bodyParser.raw()); // Parse raw binary data
 
 // API Endpoint to Upload a File
 app.post('/upload/profile-picture', async (req, res) => {
-    console.log(req.body);
     try {
+        console.log('Received file data:', req.body);
         if (!req.body.file) {
             logger.error('No file data provided');
             return res.status(400).json({ error: 'No file data provided' });
