@@ -61,7 +61,8 @@ app.post('/upload/profile-picture', async (req, res) => {
         const params = {
             Bucket: 'vone-bucket',
             Key: `profile_picture/${Date.now()}-${req.file.originalname}`,
-            Body: fileBuffer
+            Body: fileBuffer,
+            ACL: 'public-read' // Make the file public
         };
 
         const data = await s3.upload(params).promise();
