@@ -20,7 +20,7 @@ function updatePrices() {
         const priceAdjustmentFactor = (sentimentFactor + volatilityFactor - supplyRatio + marketCapFactor) * weight;
 
         // Calculate the adjusted price
-        const adjustedPrice = currentPrice * (1 + priceAdjustmentFactor);
+        let adjustedPrice = currentPrice * (1 + priceAdjustmentFactor);
 
         // Apply price floor and ceiling
         adjustedPrice = Math.max(priceFloor, Math.min(priceCeiling, adjustedPrice));
