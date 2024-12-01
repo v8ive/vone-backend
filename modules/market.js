@@ -26,9 +26,9 @@ function updatePrices() {
         economyRef.once('value', (snapshot) => {
             const economyData = snapshot.val();
             const { currencies } = economyData;
+            console.log(currencies);
 
             for (const currency in currencies) {
-                logger.info(` - Checking ${currency}`);
                 if (!currency == 'vc') {
 
                     const currencyData = currencies[currency];
