@@ -6,7 +6,7 @@ function updatePrices() {
     logger.info('Price update job started!');
 
     function calculateAdjustedPrice(currencyData, currentPrice) {
-        const { historicalData, volatility, status, currentSupply } = currencyData;
+        const { historicalData, volatility, status, currentSupply, priceFloor, priceCeiling } = currencyData;
 
         const marketCap = currentPrice * currentSupply;
 
