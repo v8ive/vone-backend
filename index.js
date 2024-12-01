@@ -29,7 +29,6 @@ schedule.scheduleJob('*/1 * * * *', updatePrices);
 
 // Mount routes
 app.use('/users', usersRouter);
-app.use('/market', require('./modules/market'));
 
 app.listen(port, () => {
     logger.info(`Server listening on port ${port}`);
