@@ -27,12 +27,11 @@ function updatePrices() {
             const economyData = snapshot.val();
 
             for (const currency in economyData) {
-                console.log(currency);
-                if (!currency.name == 'VC') {
-
-                    const currencyData = currencies[currency];
-                    const { currentPrice } = currencyData;
+                if (!currency == 'vc') {
                     logger.info(` - Updating price for ${currency}`);
+
+                    const currencyData = economyData[currency];
+                    const { currentPrice } = currencyData;
                     logger.info(`Current price: ${currentPrice}`);
 
                     // Calculate the adjusted price
