@@ -6,7 +6,7 @@ function updatePrices() {
     logger.info('Price update job started!');
 
     function calculateAdjustedPrice(currencyData, currentPrice) {
-        const { historicalData, volatility, basePrice, status } = currencyData;
+        const { historicalData, volatility, basePrice, status, priceFloor, priceCeiling } = currencyData;
 
         // Calculate trend based on historical data
         const trendFactor = calculateTrend(historicalData, 10);
@@ -29,11 +29,9 @@ function updatePrices() {
 
         // Calculate the adjusted price
         const adjustedPrice = currentPrice + (currentPrice * trendFactor) + adjustedRandomFluctuation;
-        console.log('Adjusted price:', adjustedPrice);
-
+    
         // Apply price floor and ceiling
-        const newPrice = Math.max(basePrice * 0.8, Math.min(basePrice * 1.2, adjustedPrice));
-        console.log('New price:', newPrice);
+        const newPrice = Math.max(priceFloor, Math.min(priceCeiling, adjustedPrice));
 
         return newPrice;
     }
