@@ -5,6 +5,7 @@ const { log } = require('console');
 
 // Schedule price updates every 1 minute
 schedule.scheduleJob('*/1 * * * *', () => {
+    logger.info('Price update job started!');
     function calculateAdjustedPrice(currencyData, currentPrice) {
         const { sentiment, volatility, weight, currentSupply, initialSupply } = currencyData;
 
