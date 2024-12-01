@@ -17,13 +17,23 @@ function updatePrices() {
         // Combine factors to determine the price adjustment factor
         const priceAdjustmentFactor = (sentimentFactor + volatilityFactor - supplyRatio + marketCapFactor) * weight * elasticity * priceMomentumFactor;
 
+        console.log('sentimentFactor:', sentimentFactor);
+        console.log('volatilityFactor:', volatilityFactor);
+        console.log('supplyRatio:', supplyRatio);
+        console.log('marketCapFactor:', marketCapFactor);
+        console.log('priceAdjustmentFactor:', priceAdjustmentFactor);
+
+
         // Calculate the adjusted price
         let adjustedPrice = currentPrice * (1 + priceAdjustmentFactor);
 
         // Apply price floor and ceiling
-        adjustedPrice = Math.max(priceFloor, Math.min(priceCeiling, adjustedPrice));
+        const roundedPrice = Math.max(priceFloor, Math.min(priceCeiling, adjustedPrice)).toFixed(2);
 
-        return adjustedPrice;
+        console.log('adjustedPrice:', adjustedPrice);
+        console.log('roundedPrice:', roundedPrice);
+
+        return parseFloat(roundedPrice);
     }
 
     try {
