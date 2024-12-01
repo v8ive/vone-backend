@@ -6,7 +6,7 @@ function updatePrices() {
     logger.info('Price update job started!');
 
     function calculateAdjustedPrice(currencyData, currentPrice) {
-        const { historicalData, volatility, basePrice, status, priceFloor, priceCeiling } = currencyData;
+        const { historicalData, volatility, status, priceFloor, priceCeiling } = currencyData;
 
         // Calculate trend based on historical data
         const trendFactor = calculateTrend(historicalData, 10);
@@ -24,7 +24,7 @@ function updatePrices() {
         } else if (status === "stable") {
             adjustedRandomFluctuation *= 0.5;
         } else if (status === "risky") {
-            adjustedRandomFluctuation *= 1.5;
+            adjustedRandomFluctuation *= -0.5;
         }
 
         // Calculate the adjusted price
@@ -107,7 +107,8 @@ function updatePrices() {
 
                     // Update the currency's price
                     const currencyRef = db.ref(`economy/${currency}`);
-                    currencyRef.update({ currentPrice: adjustedPrice, lastUpdated: new Date().toISOString() });
+                    currencyData.historicalData.push(adjustedPrice);
+                    currencyRef.update({ currentPrice: adjustedPrice, historicalData: currencyData.historicalData, lastUpdated: new Date().toISOString() });
 
                 } else { 
                     logger.info(` - Skipping price update for ${currency}`);
