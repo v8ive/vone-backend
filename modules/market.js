@@ -22,16 +22,18 @@ function updatePrices() {
         } else if (status === "crashing") {
             adjustedRandomFluctuation *= -1.5;
         } else if (status === "stable") {
-            adjustedRandomFluctuation *= 0.5; // Reduce volatility for stable currencies
+            adjustedRandomFluctuation *= 0.5;
         } else if (status === "risky") {
-            adjustedRandomFluctuation *= 1.5; // Increase volatility for risky currencies
+            adjustedRandomFluctuation *= 1.5;
         }
 
         // Calculate the adjusted price
         const adjustedPrice = currentPrice + (currentPrice * trendFactor) + adjustedRandomFluctuation;
+        console.log('Adjusted price:', adjustedPrice);
 
         // Apply price floor and ceiling
         const newPrice = Math.max(basePrice * 0.8, Math.min(basePrice * 1.2, adjustedPrice));
+        console.log('New price:', newPrice);
 
         return newPrice;
     }
