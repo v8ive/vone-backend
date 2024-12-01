@@ -27,7 +27,7 @@ router.post('/', async (req, res) => {
             lux: 0,
             nox: 0
         });
-        const levellingRef = db.ref('levelling/' + firebaseUid);
+        const levellingRef = db.ref('levels/' + firebaseUid);
         await levellingRef.set({
             xp: 0,
         });
