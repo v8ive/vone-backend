@@ -28,7 +28,7 @@ function updatePrices() {
 
             for (const currency in economyData) {
                 console.log('Checking ', economyData[currency].name);
-                if (!economyData[currency].name === 'VC') {
+                if (currency !== 'vc') {
                     logger.info(` - Updating price for ${currency}`);
 
                     const currencyData = economyData[currency];
