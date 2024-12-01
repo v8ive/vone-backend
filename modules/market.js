@@ -23,7 +23,7 @@ function updatePrices() {
         // Apply price floor and ceiling
         adjustedPrice = Math.max(priceFloor, Math.min(priceCeiling, adjustedPrice));
 
-        return parseFloat(adjustedPrice.toFixed(2));
+        return adjustedPrice;
     }
 
     try {
