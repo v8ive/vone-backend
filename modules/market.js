@@ -27,7 +27,8 @@ function updatePrices() {
             const economyData = snapshot.val();
 
             for (const currency in economyData) {
-                if (!currency == 'vc') {
+                console.log('Checking ', currency.name);
+                if (!currency.name == 'VC' || !currency == 'vc') {
                     logger.info(` - Updating price for ${currency}`);
 
                     const currencyData = economyData[currency];
@@ -42,6 +43,8 @@ function updatePrices() {
                     const currencyRef = db.ref(`economy/${currency}`);
                     currencyRef.update({ currentPrice: adjustedPrice, lastUpdated: new Date().toISOString() });
 
+                } else { 
+                    logger.info(` - Skipping price update for ${currency}`);
                 };
             }
 
