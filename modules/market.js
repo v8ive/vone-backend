@@ -57,6 +57,18 @@ function updatePrices() {
         return normalizedStandardDeviation;
     }
 
+    function calculateStandardDeviation(values) {
+        const mean = values.reduce((acc, val) => acc + val, 0) / values.length;
+
+        const variance = values.reduce((acc,
+            val) => acc + Math.pow(val - mean, 2), 0) / values.length;
+
+
+        const standardDeviation = Math.sqrt(variance);
+
+        return standardDeviation;
+    }
+
     function updateCurrencyStatus(currencyData) {
         const { historicalData, currentPrice, basePrice } = currencyData;
 
