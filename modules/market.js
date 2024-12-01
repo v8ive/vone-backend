@@ -5,7 +5,10 @@ const { log } = require('console');
 function updatePrices() {
     logger.info('Price update job started!');
     function calculateAdjustedPrice(currencyData, currentPrice) {
-        const { priceFloor, priceCeiling, sentiment, volatility, weight, currentSupply, initialSupply, marketCap, elasticity } = currencyData;
+        const { priceFloor, priceCeiling, sentiment, volatility, weight, currentSupply, initialSupply, elasticity } = currencyData;
+
+        // Calculate market cap
+        const marketCap = currentPrice * currentSupply;
 
         // Calculate factors influencing price adjustment
         const sentimentFactor = sentiment * 0.5; // Reduced impact
