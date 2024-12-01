@@ -5,18 +5,25 @@ const { log } = require('console');
 function updatePrices() {
     logger.info('Price update job started!');
     function calculateAdjustedPrice(currencyData, currentPrice) {
-        const { sentiment, volatility, weight, currentSupply, initialSupply } = currencyData;
+        const { priceFloor, priceCeiling, sentiment, volatility, weight, currentSupply, initialSupply } = currencyData;
+
+        // Calculate market cap
+        const marketCap = currentPrice * currentSupply;
 
         // Calculate factors influencing price adjustment
-        const sentimentFactor = sentiment * 2; // Adjust the multiplier as needed
-        const volatilityFactor = volatility * 1.5; // Adjust the multiplier as needed
+        const sentimentFactor = sentiment * 2;
+        const volatilityFactor = volatility * 1.5;
         const supplyRatio = currentSupply / initialSupply;
+        const marketCapFactor = marketCap / 100000; // Adjust the divisor to control the impact of market cap
 
         // Combine factors to determine the price adjustment factor
-        const priceAdjustmentFactor = (sentimentFactor + volatilityFactor - supplyRatio) * weight;
+        const priceAdjustmentFactor = (sentimentFactor + volatilityFactor - supplyRatio + marketCapFactor) * weight;
 
         // Calculate the adjusted price
         const adjustedPrice = currentPrice * (1 + priceAdjustmentFactor);
+
+        // Apply price floor and ceiling
+        adjustedPrice = Math.max(priceFloor, Math.min(priceCeiling, adjustedPrice));
 
         return adjustedPrice;
     }
