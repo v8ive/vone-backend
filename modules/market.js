@@ -28,6 +28,7 @@ function updatePrices() {
             const { currencies } = economyData;
 
             for (const currency in currencies) {
+                logger.info(` - Checking ${currency}`);
                 if (!currency == 'vc') {
 
                     const currencyData = currencies[currency];
