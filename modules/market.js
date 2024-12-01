@@ -4,43 +4,72 @@ const { log } = require('console');
 
 function updatePrices() {
     logger.info('Price update job started!');
+
     function calculateAdjustedPrice(currencyData, currentPrice) {
-        const { priceFloor, priceCeiling, sentiment, volatility, weight, currentSupply, initialSupply, elasticity } = currencyData;
+        const { historicalData, volatility, basePrice, status } = currencyData;
 
-        // Calculate market cap
-        const marketCap = currentPrice * currentSupply;
+        // Calculate trend based on historical data
+        const trendFactor = calculateTrend(historicalData, 10);
 
-        // Calculate factors influencing price adjustment
-        const sentimentFactor = sentiment * 0.5; // Reduced impact
-        const volatilityFactor = volatility * 0.5; // Reduced impact
-        const supplyRatio = currentSupply / initialSupply;
-        const marketCapFactor = marketCap / 100000;
-        const priceMomentumFactor = 0.2; // Adjust as needed
+        // Calculate volatility index based on recent price changes
+        const volatilityIndex = calculateVolatilityIndex(historicalData);
 
-        // Combine factors to determine the price adjustment factor
-        const priceAdjustmentFactor = (sentimentFactor + volatilityFactor - supplyRatio + marketCapFactor) * weight * elasticity * priceMomentumFactor;
+        // Adjust random fluctuation based on status and volatility index
+        let adjustedRandomFluctuation = Math.random() * volatility * volatilityIndex * 2 - volatility * volatilityIndex;
 
-        // Limit the price adjustment factor to a reasonable value
-        const maxAdjustmentFactor = 0.2;
-        const adjustedPriceFactor = Math.min(priceAdjustmentFactor, maxAdjustmentFactor);
-
-        console.log('sentimentFactor:', sentimentFactor);
-        console.log('volatilityFactor:', volatilityFactor);
-        console.log('supplyRatio:', supplyRatio);
-        console.log('marketCapFactor:', marketCapFactor);
-        console.log('priceAdjustmentFactor:', priceAdjustmentFactor);
-
+        if (status === "rising") {
+            adjustedRandomFluctuation *= 1.5;
+        } else if (status === "crashing") {
+            adjustedRandomFluctuation *= -1.5;
+        } else if (status === "stable") {
+            adjustedRandomFluctuation *= 0.5; // Reduce volatility for stable currencies
+        } else if (status === "risky") {
+            adjustedRandomFluctuation *= 1.5; // Increase volatility for risky currencies
+        }
 
         // Calculate the adjusted price
-        let adjustedPrice = currentPrice * (1 + adjustedPriceFactor);
+        const adjustedPrice = currentPrice + (currentPrice * trendFactor) + adjustedRandomFluctuation;
 
         // Apply price floor and ceiling
-        const roundedPrice = Math.max(priceFloor, Math.min(priceCeiling, adjustedPrice)).toFixed(2);
+        const newPrice = Math.max(basePrice * 0.8, Math.min(basePrice * 1.2, adjustedPrice));
 
-        console.log('adjustedPrice:', adjustedPrice);
-        console.log('roundedPrice:', roundedPrice);
+        return newPrice;
+    }
 
-        return parseFloat(roundedPrice);
+    function calculateTrend(historicalData, windowSize) {
+        const window = historicalData.slice(-windowSize);
+        const averagePrice = window.reduce((acc, price) => acc + price, 0) / window.length;
+        const trendFactor = (averagePrice - historicalData[0]) / historicalData[0];
+
+        return trendFactor;
+    }
+
+    function calculateVolatilityIndex(historicalData) {
+        // Calculate the standard deviation of recent price changes
+        // You can adjust the window size to control the sensitivity of the volatility index
+        const windowSize = 10;
+        const recentPrices = historicalData.slice(-windowSize);
+        const standardDeviation = calculateStandardDeviation(recentPrices);
+
+        // Normalize the standard deviation to a value between 0 and 1
+        const normalizedStandardDeviation = standardDeviation / (recentPrices[recentPrices.length - 1] * 0.1);
+
+        return normalizedStandardDeviation;
+    }
+
+    function updateCurrencyStatus(currencyData) {
+        const { historicalData, currentPrice, basePrice } = currencyData;
+
+        // Check if the price has increased significantly
+        if (currentPrice > basePrice * 1.2) {
+            currencyData.status = 'rising';
+        } else if (currentPrice < basePrice * 0.8) {
+            currencyData.status = 'crashing';
+        } else if (currentPrice > basePrice * 1.05) {
+            currencyData.status = 'stable';
+        } else if (currentPrice < basePrice * 0.95) {
+            currencyData.status = 'risky';
+        }
     }
 
     try {
