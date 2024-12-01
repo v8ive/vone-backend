@@ -40,6 +40,7 @@ function updatePrices() {
         const window = historicalData.slice(-windowSize);
         const averagePrice = window.reduce((acc, price) => acc + price, 0) / window.length;
         const trendFactor = (averagePrice - historicalData[0]) / historicalData[0];
+        console.log('Trend factor:', trendFactor);
 
         return trendFactor;
     }
@@ -54,6 +55,7 @@ function updatePrices() {
         // Normalize the standard deviation to a value between 0 and 1
         const normalizedStandardDeviation = standardDeviation / (recentPrices[recentPrices.length - 1] * 0.1);
 
+        console.log('Volatility index:', normalizedStandardDeviation);
         return normalizedStandardDeviation;
     }
 
@@ -65,7 +67,8 @@ function updatePrices() {
 
 
         const standardDeviation = Math.sqrt(variance);
-
+        
+        console.log('Standard deviation:', standardDeviation);
         return standardDeviation;
     }
 
