@@ -27,7 +27,7 @@ function updatePrices() {
             const economyData = snapshot.val();
 
             for (const currency in economyData) {
-                if (!currency == 'vc') {
+                if (!currency.name == 'VC') {
 
                     const currencyData = currencies[currency];
                     const { currentPrice } = currencyData;
