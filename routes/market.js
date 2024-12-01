@@ -29,20 +29,22 @@ schedule.scheduleJob('*/1 * * * *', () => {
             const { currencies } = economyData;
 
             for (const currency in currencies) {
-                if ( currency == 'vc') return;
+                if ( !currency == 'vc') {
 
-                const currencyData = currencies[currency];
-                const { currentPrice } = currencyData;
-                logger.info(` - Updating price for ${currency}`);
-                logger.info(`Current price: ${currentPrice}`);
+                    const currencyData = currencies[currency];
+                    const { currentPrice } = currencyData;
+                    logger.info(` - Updating price for ${currency}`);
+                    logger.info(`Current price: ${currentPrice}`);
 
-                // Calculate the adjusted price
-                const adjustedPrice = calculateAdjustedPrice(currencyData, currentPrice);
-                logger.info(`Adjusted price: ${adjustedPrice}`);
+                    // Calculate the adjusted price
+                    const adjustedPrice = calculateAdjustedPrice(currencyData, currentPrice);
+                    logger.info(`Adjusted price: ${adjustedPrice}`);
+
+                    // Update the currency's price
+                    const currencyRef = db.ref(`economy/${currency}`);
+                    currencyRef.update({ currentPrice: adjustedPrice, lastUpdated: new Date().toISOString() });
                 
-                // Update the currency's price
-                const currencyRef = db.ref(`economy/${currency}`);
-                currencyRef.update({ currentPrice: adjustedPrice, lastUpdated: new Date().toISOString() });
+                };
             }
 
             logger.info(' - Price updates completed successfully!');
