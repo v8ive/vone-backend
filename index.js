@@ -24,6 +24,7 @@ app.use(multer().single('file'));
 
 // Mount routes
 app.use('/users', usersRouter);
+app.use('/market', require('./routes/market'));
 
 app.listen(port, () => {
     logger.info(`Server listening on port ${port}`);
