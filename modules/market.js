@@ -33,7 +33,7 @@ function updatePrices() {
         // Apply price floor and ceiling
         const newPrice = Math.max(priceFloor, Math.min(priceCeiling, adjustedPrice));
 
-        return newPrice;
+        return parseFloat(newPrice.toFixed(2));
     }
 
     function calculateTrend(historicalData, windowSize) {
