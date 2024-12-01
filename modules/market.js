@@ -1,10 +1,8 @@
-const schedule = require('node-schedule');
-const { db } = require('../modules/database');
-const { logger } = require('../modules/logger');
+const { db } = require('./database');
+const { logger } = require('./logger');
 const { log } = require('console');
 
-// Schedule price updates every 1 minute
-schedule.scheduleJob('*/1 * * * *', () => {
+function updatePrices() {
     logger.info('Price update job started!');
     function calculateAdjustedPrice(currencyData, currentPrice) {
         const { sentiment, volatility, weight, currentSupply, initialSupply } = currencyData;
@@ -23,14 +21,14 @@ schedule.scheduleJob('*/1 * * * *', () => {
         return adjustedPrice;
     }
 
-    try { 
+    try {
         const economyRef = db.ref('economy');
         economyRef.once('value', (snapshot) => {
             const economyData = snapshot.val();
             const { currencies } = economyData;
 
             for (const currency in currencies) {
-                if ( !currency == 'vc') {
+                if (!currency == 'vc') {
 
                     const currencyData = currencies[currency];
                     const { currentPrice } = currencyData;
@@ -44,7 +42,7 @@ schedule.scheduleJob('*/1 * * * *', () => {
                     // Update the currency's price
                     const currencyRef = db.ref(`economy/${currency}`);
                     currencyRef.update({ currentPrice: adjustedPrice, lastUpdated: new Date().toISOString() });
-                
+
                 };
             }
 
@@ -53,4 +51,8 @@ schedule.scheduleJob('*/1 * * * *', () => {
     } catch (err) {
         logger.error('Error updating prices:', err);
     }
-});
+}
+
+module.exports = {
+    updatePrices,
+};
