@@ -6,34 +6,42 @@ function updatePrices() {
     logger.info('Price update job started!');
 
     function calculateAdjustedPrice(currencyData, currentPrice) {
-        const { historicalData, volatility, status, priceFloor, priceCeiling } = currencyData;
+        const { historicalData, volatility, status, currentSupply } = currencyData;
+
+        const marketCap = currentPrice * currentSupply;
 
         // Calculate trend based on historical data
-        const trendFactor = calculateTrend(historicalData, 10);
+        const trendFactor = calculateTrend(historicalData);
 
         // Calculate volatility index based on recent price changes
         const volatilityIndex = calculateVolatilityIndex(historicalData);
 
         // Adjust random fluctuation based on status and volatility index
-        let adjustedRandomFluctuation = Math.random() * volatility * volatilityIndex * 2 - volatility * volatilityIndex;
-
+        let randomFluctuation = Math.random() * volatility * volatilityIndex * 2 - volatility * volatilityIndex;
         if (status === "rising") {
-            adjustedRandomFluctuation *= 1.5;
+            randomFluctuation *= 1.5;
         } else if (status === "crashing") {
-            adjustedRandomFluctuation *= -1.5;
+            randomFluctuation *= -1.5;
         } else if (status === "stable") {
-            adjustedRandomFluctuation *= 0.5;
+            randomFluctuation *= 0.5;
         } else if (status === "risky") {
-            adjustedRandomFluctuation *= -0.5;
+            randomFluctuation *= -0.5;
         }
 
-        // Calculate the adjusted price
-        const adjustedPrice = currentPrice + (currentPrice * trendFactor) + adjustedRandomFluctuation;
-    
-        // Apply price floor and ceiling
-        const newPrice = Math.max(priceFloor, Math.min(priceCeiling, adjustedPrice));
+        // Calculate the price adjustment factor
+        const priceAdjustmentFactor = (trendFactor + randomFluctuation) * (1 - marketCap / 1000000); // Adjust market cap influence as needed
 
-        return parseFloat(newPrice.toFixed(2));
+        // Limit the price adjustment factor
+        const maxAdjustmentFactor = 0.1; // Adjust as needed
+        const adjustedPriceFactor = Math.min(priceAdjustmentFactor, maxAdjustmentFactor);
+
+        // Calculate the adjusted price
+        let adjustedPrice = currentPrice * (1 + adjustedPriceFactor);
+
+        // Apply price floor and ceiling
+        adjustedPrice = Math.max(priceFloor, Math.min(priceCeiling, adjustedPrice));
+
+        return adjustedPrice;
     }
 
     function calculateTrend(historicalData, windowSize) {
