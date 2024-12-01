@@ -25,10 +25,8 @@ function updatePrices() {
         const economyRef = db.ref('economy');
         economyRef.once('value', (snapshot) => {
             const economyData = snapshot.val();
-            console.log(economyData);
-            const { currencies } = economyData;
 
-            for (const currency in currencies) {
+            for (const currency in economyData) {
                 if (!currency == 'vc') {
 
                     const currencyData = currencies[currency];
