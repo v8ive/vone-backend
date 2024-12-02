@@ -8,6 +8,7 @@ const { logger } = require('./modules/logger');
 const { updatePrices } = require('./modules/market');
 
 const usersRoute = require('./routes/users');
+const healthCheckRoute = require('./routes/healthCheck');
 
 const multer = require('multer');  // For handling file uploads
 
@@ -29,6 +30,7 @@ app.use(multer().single('file'));
 
 // Mount routes
 app.use('/auth', usersRoute);
+app.use('/health', healthCheckRoute);
 
 app.listen(port, () => {
     logger.info(`Server listening on port ${port}`);
