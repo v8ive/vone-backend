@@ -1,11 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const schedule = require('node-schedule');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
 const { logger } = require('./modules/logger');
-const { updatePrices } = require('./modules/market');
 
 const usersRoute = require('./routes/users');
 const healthCheckRoute = require('./routes/healthCheck');
@@ -24,9 +22,6 @@ app.use(bodyParser.urlencoded({
 })); // Parse URL-encoded bodies
 app.use(bodyParser.raw()); // Parse raw binary data
 app.use(multer().single('file'));
-
-// Schedule price updates every 1 minute
-// schedule.scheduleJob('*/1 * * * *', updatePrices);
 
 // Mount routes
 app.use('/auth', usersRoute);
