@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../modules/supabase');
+const { createServerClient } = require('@supabase/supabase-js');
 const { logger } = require('../modules/logger');
 
 router.get("/discord/callback", async function (req, res) {
@@ -11,7 +11,21 @@ router.get("/discord/callback", async function (req, res) {
     if (code) {
         logger.info('Exchanging code for session...');
         try {
-            const { user, session } = await supabase.auth.exchangeCodeForSession(code);
+            const supabase = createServerClient(
+                process.env.SUPABASE_URL,
+                process.env.SUPABASE_ANON_KEY, {
+                cookies: {
+                    getAll() {
+                        return parseCookieHeader(context.req.headers.cookie ?? '')
+                    },
+                    setAll(cookiesToSet) {
+                        cookiesToSet.forEach(({ name, value, options }) =>
+                            context.res.appendHeader('Set-Cookie', serializeCookieHeader(name, value, options))
+                        )
+                    },
+                },
+            });
+            await supabase.auth.exchangeCodeForSession(code);
             logger.info('User logged in:', user);
             logger.info('Session:', session);
 
@@ -19,6 +33,7 @@ router.get("/discord/callback", async function (req, res) {
             // ... (your logic for session handling)
 
             // Optionally, redirect to the desired page after login
+            logger.info('Redirecting to:', next);
             res.redirect(303, next);
         } catch (error) {
             logger.error('Error exchanging code for session:', error);
@@ -30,8 +45,6 @@ router.get("/discord/callback", async function (req, res) {
         // Handle the case where the code is missing
         res.status(400).send('Missing authorization code');
     }
-
-    logger.info('Redirecting to:', next);
 });
 
 module.exports = router;
