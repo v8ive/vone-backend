@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('@supabase/supabase-js');
+const { supabase } = require('../modules/supabase');
 const { logger } = require('../modules/logger');
 
 router.get("/discord/callback", async function (req, res) {
@@ -14,7 +14,12 @@ router.get("/discord/callback", async function (req, res) {
             const { user, session } = await supabase.auth.exchangeCodeForSession(code);
             logger.info('User logged in:', user);
             logger.info('Session:', session);
-            // ... (other logic, like setting cookies or redirecting)
+
+            // Persist the session (e.g., set cookies, store in database)
+            // ... (your logic for session handling)
+
+            // Optionally, redirect to the desired page after login
+            res.redirect(303, next);
         } catch (error) {
             logger.error('Error exchanging code for session:', error);
             // Handle error, e.g., redirect to an error page or display an error message
@@ -27,7 +32,6 @@ router.get("/discord/callback", async function (req, res) {
     }
 
     logger.info('Redirecting to:', next);
-    res.redirect(303, next);
 });
 
 module.exports = router;
