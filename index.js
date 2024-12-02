@@ -5,7 +5,6 @@ require('dotenv').config();
 
 const { logger } = require('./modules/logger');
 
-const usersRoute = require('./routes/users');
 const healthCheckRoute = require('./routes/healthCheck');
 
 const multer = require('multer');  // For handling file uploads
