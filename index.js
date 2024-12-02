@@ -2,11 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const schedule = require('node-schedule');
 const bodyParser = require('body-parser');
-const { supabase } = require('./modules/supabase');
 require('dotenv').config();
 
 const { logger } = require('./modules/logger');
 const { updatePrices } = require('./modules/market');
+
+const usersRoute = require('./routes/users');
 
 const multer = require('multer');  // For handling file uploads
 
@@ -27,8 +28,7 @@ app.use(multer().single('file'));
 schedule.scheduleJob('*/1 * * * *', updatePrices);
 
 // Mount routes
-app.use('/users', require('./routes/users'));
-app.use('/auth', require('./routes/auth'));
+app.use('/auth', usersRoute);
 
 app.listen(port, () => {
     logger.info(`Server listening on port ${port}`);
