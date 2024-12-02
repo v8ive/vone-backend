@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { supabase } = require('@supabase/supabase-js');
 const { logger } = require('../modules/logger');
 
 router.get("/discord/callback", async function (req, res) {
