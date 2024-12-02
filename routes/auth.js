@@ -31,3 +31,5 @@ router.get("/discord/callback", async function (req, res) {
 
     res.redirect(303, `/${next.slice(1)}`)
 })
+
+module.exports = router;
