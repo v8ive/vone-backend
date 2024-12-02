@@ -4,7 +4,7 @@ const { supabase } = require('../modules/supabase');
 const { logger } = require('../modules/logger');
 
 router.get("/discord/callback", async function (req, res) {
-    logger.info('Discord OAuth callback received:', req.query);
+    logger.info('Discord OAuth callback received:', req);
 
     const accessToken = req.query.access_token;
     const tokenType = req.query.token_type;
