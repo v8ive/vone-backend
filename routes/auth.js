@@ -1,49 +1,45 @@
 const express = require('express');
 const router = express.Router();
-const { createServerClient } = require('@supabase/supabase-js');
+const { supabase } = require('../modules/supabase');
 const { logger } = require('../modules/logger');
 
 router.get("/discord/callback", async function (req, res) {
     logger.info('Discord OAuth callback received:', req.query);
-    const code = req.query.code;
-    const next = req.query.next ?? "/";
 
-    if (code) {
-        logger.info('Exchanging code for session...');
+    const accessToken = req.query.access_token;
+    const tokenType = req.query.token_type;
+
+    if (accessToken) {
         try {
-            const supabase = createServerClient(
-                process.env.SUPABASE_URL,
-                process.env.SUPABASE_ANON_KEY, {
-                cookies: {
-                    getAll() {
-                        return parseCookieHeader(context.req.headers.cookie ?? '')
-                    },
-                    setAll(cookiesToSet) {
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            context.res.appendHeader('Set-Cookie', serializeCookieHeader(name, value, options))
-                        )
-                    },
+            // Exchange Discord access token for Supabase session
+            const { user, session, error } = await supabase.auth.signInWithOAuth({
+                provider: 'discord',
+                options: {
+                    providerToken: accessToken,
                 },
             });
-            await supabase.auth.exchangeCodeForSession(code);
-            logger.info('User logged in:', user);
-            logger.info('Session:', session);
 
-            // Persist the session (e.g., set cookies, store in database)
-            // ... (your logic for session handling)
+            if (error) {
+                logger.error('Error exchanging access token:', error);
+                res.status(500).send('Error logging in with Discord');
+                return;  // Exit the function if there's an error
+            }
 
-            // Optionally, redirect to the desired page after login
-            logger.info('Redirecting to:', next);
-            res.redirect(303, next);
+            // Successful authentication, handle user session
+            logger.info('User authenticated with Supabase:', user);
+            // Here you can choose how to handle the session:
+            // - Store the session token in a cookie or local storage
+            // - Redirect to a protected route or dashboard
+
+            res.redirect(303, 'http://localhost:5173/profile'); // Replace with your desired redirect URL
+
         } catch (error) {
-            logger.error('Error exchanging code for session:', error);
-            // Handle error, e.g., redirect to an error page or display an error message
+            logger.error('Unexpected error during authentication:', error);
             res.status(500).send('Error logging in with Discord');
         }
     } else {
-        logger.warn('No authorization code received');
-        // Handle the case where the code is missing
-        res.status(400).send('Missing authorization code');
+        logger.warn('No access token received');
+        res.status(400).send('Missing access token');
     }
 });
 
