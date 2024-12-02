@@ -1,35 +1,31 @@
 const router = express.Router();
 const { logger } = require('../modules/logger');
-const { createServerClient } = require('@supabase/supabase-js')
-const { parseCookieHeader, serializeCookieHeader } = require('../modules/cookies')
 
 router.get("/discord/callback", async function (req, res) {
-    logger.info('Discord OAuth callback received:', req.query)
-    const code = req.query.code
-    const next = req.query.next ?? "/"
+    logger.info('Discord OAuth callback received:', req.query);
+    const code = req.query.code;
+    const next = req.query.next ?? "/";
 
     if (code) {
-        logger.info('Exchanging code for session...')
-        const supabase = createServerClient(
-            process.env.SUPABASE_URL,
-            process.env.SUPABASE_ANON_KEY, {
-            cookies: {
-                getAll() {
-                    return parseCookieHeader(context.req.headers.cookie ?? '')
-                },
-                setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value, options }) =>
-                        context.res.appendHeader('Set-Cookie', serializeCookieHeader(name, value, options))
-                    )
-                },
-            },
-        })
-        logger.info('Supabase client created:', supabase)
-        await supabase.auth.exchangeCodeForSession(code)
+        logger.info('Exchanging code for session...');
+        try {
+            const { user, session } = await supabase.auth.exchangeCodeForSession(code);
+            logger.info('User logged in:', user);
+            logger.info('Session:', session);
+            // ... (other logic, like setting cookies or redirecting)
+        } catch (error) {
+            logger.error('Error exchanging code for session:', error);
+            // Handle error, e.g., redirect to an error page or display an error message
+            res.status(500).send('Error logging in with Discord');
+        }
+    } else {
+        logger.warn('No authorization code received');
+        // Handle the case where the code is missing
+        res.status(400).send('Missing authorization code');
     }
-    logger.info('Redirecting to:', next)
 
-    res.redirect(303, `/${next.slice(1)}`)
-})
+    logger.info('Redirecting to:', next);
+    res.redirect(303, next);
+});
 
 module.exports = router;
