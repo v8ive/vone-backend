@@ -23,7 +23,6 @@ app.use(bodyParser.raw()); // Parse raw binary data
 app.use(multer().single('file'));
 
 // Mount routes
-app.use('/auth', usersRoute);
 app.use('/health', healthCheckRoute);
 
 app.listen(port, () => {
