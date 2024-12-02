@@ -25,7 +25,7 @@ app.use(bodyParser.raw()); // Parse raw binary data
 app.use(multer().single('file'));
 
 // Schedule price updates every 1 minute
-schedule.scheduleJob('*/1 * * * *', updatePrices);
+// schedule.scheduleJob('*/1 * * * *', updatePrices);
 
 // Mount routes
 app.use('/auth', usersRoute);
