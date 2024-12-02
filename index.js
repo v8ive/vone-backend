@@ -9,8 +9,6 @@ const { updatePrices } = require('./modules/market');
 
 const multer = require('multer');  // For handling file uploads
 
-const usersRouter = require('./routes/users');
-
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -28,7 +26,8 @@ app.use(multer().single('file'));
 schedule.scheduleJob('*/1 * * * *', updatePrices);
 
 // Mount routes
-app.use('/users', usersRouter);
+app.use('/users', require('./routes/users'));
+app.use('/auth', require('./routes/auth'));
 
 app.listen(port, () => {
     logger.info(`Server listening on port ${port}`);
