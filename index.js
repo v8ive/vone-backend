@@ -14,8 +14,23 @@ const { initializeMiners, Blockchain } = require('./modules/blockchain');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+    extended:
+        true
+})); // Parse URL-encoded bodies
+app.use(bodyParser.raw()); // Parse raw binary data
+app.use(multer().single('file'));
 
+// Mount routes
+app.use('/auth', require('./routes/auth'));
+app.use('/health', healthCheckRoute);
+
+// Start the WebSocket server
 const wss = new WebSocket.Server({ server: app });
+logger.info('WebSocket server started :', wss);
 
 wss.on('connection', (ws) => {
     logger.info('Client connected');
@@ -37,21 +52,6 @@ wss.on('connection', (ws) => {
     ws.send(JSON.stringify(blockchain));
 
 });
-
-
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-    extended:
-        true
-})); // Parse URL-encoded bodies
-app.use(bodyParser.raw()); // Parse raw binary data
-app.use(multer().single('file'));
-
-// Mount routes
-app.use('/auth', require('./routes/auth'));
-app.use('/health', healthCheckRoute);
 
 
 app.listen(port, () => {
