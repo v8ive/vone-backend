@@ -38,6 +38,10 @@ wss.on('connection', (ws) => {
 
     const blockchain = new Blockchain(wss);
 
+    ws.onmessage = (message) => {
+        logger.info('Received message:', message);
+    };
+
     ws.on('message', async (message) => {
         if (message === 'add_miner') {
             await blockchain.addMiner();
