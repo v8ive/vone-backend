@@ -49,63 +49,67 @@ class Miner {
 
     broadcastStatus = (message) => {
         logger.info(`Broadcasting status update: ${message}`);
-        this.ws.send(JSON.stringify({
-            action: 'miner_status_update',
-            data: {
-                miner: this,
-                message
+        this.wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({
+                    action: 'miner_status_update',
+                    data: {
+                        miner: this,
+                        message
+                    }
+                }));
             }
-        }));
+        });
     }
 
     async powerOn() {
         await this.initialize();
-        await supabase
+        const { data, error } = await supabase
             .from('miners')
             .update({ isActive: true, status: 'online' })
-            .eq('id', this.id)
-            .then((data) => {
-                this.isActive = true;
-                this.status = 'online';
-                this.broadcastStatus('Powered On');
-                return;
-            }).catch((error) => {
-                logger.error('Failed to power on miner');
-                return;
-            });
+            .eq('id', this.id);
+
+        if (error) {
+            logger.error('Failed to power on miner', error);
+            return;
+        }
+
+        this.isActive = true;
+        this.status = 'online';
+        this.broadcastStatus('Powered On');
     }
     
     async powerOff() {
         await this.initialize();
-        await supabase
+        const { data, error } = await supabase
             .from('miners')
             .update({ isActive: false, status: 'offline' })
-            .eq('id', this.id)
-            .then((data) => {
-                this.isActive = false;
-                this.status = 'offline';
-                this.broadcastStatus('Powered Off');
-                return;
-            }).catch((error) => {
-                logger.error('Failed to power off miner');
-                return;
-            });
+            .eq('id', this.id);
+
+        if (error) {
+            logger.error('Failed to power off miner', error);
+            return;
+        }
+
+        this.isActive = false;
+        this.status = 'offline';
+        this.broadcastStatus('Powered Off');
     }
 
     async mine() {
         await this.initialize();
-        await supabase
+        const { data, error } = await supabase
             .from('miners')
             .update({ status: 'mining' })
-            .eq('id', this.id)
-            .then((data) => {
-                this.status = 'mining';
-                this.broadcastStatus('Started Mining');
-                return;
-            }).catch((error) => {
-                logger.error('Failed to start mining');
-                return;
-            });
+            .eq('id', this.id);
+
+        if (error) {
+            logger.error('Failed to start Mining', error);
+            return;
+        }
+
+        this.status = 'mining';
+        this.broadcastStatus('Started Mining');
         await this.blockchain.mineBlock(this);
     }
 
