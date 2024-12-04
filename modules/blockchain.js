@@ -99,7 +99,7 @@ class Blockchain {
 
         // Insert the new block into the database
         try {
-            await supabase
+            const { error } = await supabase
                 .from('blocks')
                 .insert([{
                     timestamp: newBlock.timestamp,
@@ -111,6 +111,10 @@ class Blockchain {
                     miner_id: newBlock.minerId,
                 }])
                 .single();
+            if (error) {
+                logger.error('Error adding block to database:' + error.message);
+                return;
+            }
             this.chain.push(newBlock);
             logger.info('New block added to database:', newBlock);
         } catch (error) {
@@ -130,6 +134,11 @@ class Blockchain {
                 currency_code: currencyCode,
             }])
             .single();
+        
+        if (error) {
+            logger.error('Error adding miner:', error);
+            return;
+        }
 
         this.broadcastNewMiner(miner);
     }
