@@ -35,8 +35,12 @@ const server = createServer(app);
 const wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws, req) => {
-    console.log(req.query)
-    const userId = req.query.userId;
+    if (!req.url.includes('userId')) {
+        logger.error('User ID not found');
+        ws.close();
+        return;
+    }
+    const userId = req.url.split('?')[1].split('=')[1];
     ws.userId = userId;
 
     logger.info('Client connected');
