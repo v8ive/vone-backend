@@ -4,7 +4,6 @@ const { logger } = require('../modules/logger');
 class Miner {
     constructor(ws, wss, id, blockchain) {
         this.ws = ws;
-        this.client = client;
         this.wss = wss;
         this.blockchain = blockchain;
         this.id = id;
