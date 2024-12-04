@@ -51,9 +51,10 @@ class Miner {
 
     broadcastStatus = (message) => {
         logger.info(`Broadcasting status update: ${message}`);
-        this.ws.clients.forEach((client) => {
-            logger.info(`Sending status update to client: ${client}`);
+        this.wss.clients.forEach((client) => {
+            logger.info(`Checking client: ${client}`);
             if (client.readyState === WebSocket.OPEN) {
+                logger.info(`Client Available, Sending message: ${message}`);
                 client.send(JSON.stringify({
                     action: 'miner_status_update',
                     data: {
