@@ -58,7 +58,8 @@ class Miner {
                 client.send(JSON.stringify({
                     action: 'miner_status_update',
                     data: {
-                        miner: this,
+                        miner_id: this.id,
+                        status: this.status,
                         message
                     }
                 }));
