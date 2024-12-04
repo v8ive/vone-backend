@@ -44,10 +44,10 @@ class Blockchain {
             .select('*')
             .order('block_height', { ascending: true })
             .then((data) => {
-                console.log('Blocks fetched:', data);
+                logger.info('Blocks fetched:' + data.data.toString());
                 return data.data;
             }).catch((error) => {
-                logger.error('Error fetching blocks:', error);
+                logger.error('Error fetching blocks:' + error);
             });
         this.difficulty = 2; // Adjust difficulty as needed
             
