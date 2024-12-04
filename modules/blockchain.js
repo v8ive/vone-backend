@@ -31,8 +31,8 @@ class Block {
 }
 
 class Blockchain {
-    constructor(ws) {
-        this.ws = ws; // WebSocket server
+    constructor(wss) {
+        this.wss = wss; // WebSocket server
         this.chain = supabase
             .from('blocks')
             .select('*')
@@ -149,7 +149,7 @@ class Blockchain {
     // Broadcast functionality
     broadcastNewBlock(block) {
         logger.info('Broadcasting new Block:', block);
-        this.ws.clients.forEach((client) => {
+        this.wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({
                     action: 'new_block',

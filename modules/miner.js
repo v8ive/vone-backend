@@ -3,8 +3,9 @@ const { logger } = require('../modules/logger');
 const WebSocket = require('ws');
 
 class Miner {
-    constructor(wss, id, blockchain) {
-        this.wss = wss;
+    constructor(client, wss, id, blockchain) {
+        this.client = client; // WebSocket (client)
+        this.wss = wss; // WebSocket server
         this.blockchain = blockchain;
         this.id = id;
 
@@ -48,15 +49,13 @@ class Miner {
     }
 
     broadcastStatus = (message) => {
-        this.wss.clients.forEach((client) => {
-            client.send(JSON.stringify({
-                action: 'miner_status_update',
-                data: {
-                    miner: this,
-                    message
-                }
-            }));
-        });
+        this.client.send(JSON.stringify({
+            action: 'miner_status_update',
+            data: {
+                miner: this,
+                message
+            }
+        }));
     }
 
     async powerOn() {

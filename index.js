@@ -34,25 +34,18 @@ app.use('/health', healthCheckRoute);
 const server = createServer(app);
 const wss = new WebSocket.Server({ server });
 
-wss.on('connection', (ws, req) => {
-    if (!req.url.includes('userId')) {
-        logger.error('User ID not found');
-        ws.close();
-        return;
-    }
-    const userId = req.url.split('?')[1].split('=')[1];
-    ws.userId = userId;
+wss.on('connection', (client, req) => {
 
     logger.info('Client connected');
 
     const blockchain = new Blockchain(wss);
 
-    ws.onmessage = async (message) => {
+    client.onmessage = async (message) => {
         data = JSON.parse(message.data);
 
         if (data.action === 'miner_power_on') {
             logger.info(`Powering on miner : ${data.minerId}`);
-            const miner = new Miner(wss, data.minerId, blockchain);
+            const miner = new Miner(client, wss, data.minerId, blockchain);
             if (!miner) {
                 logger.error('Miner not found');
                 return;
@@ -65,7 +58,7 @@ wss.on('connection', (ws, req) => {
         }
         if (data.action === 'miner_power_off') {
             logger.info(`Powering off miner : ${data.minerId}`);
-            const miner = new Miner(wss, data.minerId, blockchain);
+            const miner = new Miner(client, wss, data.minerId, blockchain);
             await miner.initialize();
             if (!miner) {
                 logger.error('Miner not found');
@@ -79,7 +72,7 @@ wss.on('connection', (ws, req) => {
         }
         if (data.action === 'miner_start') {
             logger.info(`Miner Starting : ${data.minerId}`);
-            const miner = new Miner(wss, data.minerId, blockchain);
+            const miner = new Miner(client, wss, data.minerId, blockchain);
             if (!miner) {
                 logger.error('Miner not found');
                 return;
@@ -96,7 +89,7 @@ wss.on('connection', (ws, req) => {
         }
     };
 
-    ws.onclose = () => {
+    client.onclose = () => {
         logger.info('Client disconnected');
     };
 
