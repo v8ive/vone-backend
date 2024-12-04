@@ -36,7 +36,7 @@ const wss = new WebSocket.Server({ server });
 wss.on('connection', (ws) => {
     logger.info('Client connected');
 
-    const blockchain = new Blockchain(ws);
+    const blockchain = new Blockchain(wss);
 
     ws.on('message', async (message) => {
         if (message === 'add_miner') {
