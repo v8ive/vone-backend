@@ -44,31 +44,13 @@ class Blockchain {
             .select('*')
             .order('block_height', { ascending: true })
             .then((data) => {
+                console.log('Blocks fetched:', data);
                 return data.data;
             }).catch((error) => {
-                logger.error('Error fetching or creating blocks:', error);
+                logger.error('Error fetching blocks:', error);
             });
         this.difficulty = 2; // Adjust difficulty as needed
-
-        if (this.chain.length === 0) {
-            this.chain.push(this.createGenesisBlock());
-        }
             
-    }
-
-    createGenesisBlock() {
-        return new Block(
-            0,
-            new Date().toISOString(),
-            {
-                // Add actual block data here (e.g., transactions)
-                message: "Genesis Block!",
-                transactions: []
-            },
-            "0",
-            0,
-            0
-        );
     }
 
     getLastBlock() {
