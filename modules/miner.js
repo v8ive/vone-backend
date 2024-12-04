@@ -14,7 +14,7 @@ class Miner {
         this.status,
         this.currency_code = supabase
             .from('miners')
-            .select('user_id, hash_rate, isActive, mining, status, currency_code')
+            .select('*')
             .eq('id', id)
             .then((data) => {
                 return data.data[0].user_id, 
