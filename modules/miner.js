@@ -15,11 +15,11 @@ class Miner {
         this.status = 'unknown';
         this.currency_code = null;
 
-        this.initialize().then(() => {
-            logger.info(`Initialized miner ${this.id}`);
-        }).catch((error) => {
-            logger.error(`Failed to initialize miner ${this.id}: ${error}`);
-        });
+        // this.initialize().then(() => {
+        //     logger.info(`Initialized miner ${this.id}`);
+        // }).catch((error) => {
+        //     logger.error(`Failed to initialize miner ${this.id}: ${error}`);
+        // });
         
     }
 
@@ -62,6 +62,7 @@ class Miner {
     }
 
     async powerOn() {
+        await this.initialize();
         await supabase
             .from('miners')
             .update({ isActive: true, status: 'online' })
@@ -78,6 +79,7 @@ class Miner {
     }
     
     async powerOff() {
+        await this.initialize();
         await supabase
             .from('miners')
             .update({ isActive: false, status: 'offline' })
@@ -94,6 +96,7 @@ class Miner {
     }
 
     async mine() {
+        await this.initialize();
         await supabase
             .from('miners')
             .update({ status: 'mining' })
