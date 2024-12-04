@@ -15,9 +15,11 @@ class Miner {
         this.status = 'unknown';
         this.currency_code = null;
 
-        useEffect(() => {
-            this.initialize();
-        }, []);
+        this.initialize().then(() => {
+            logger.info(`Initialized miner ${this.id}`);
+        }).catch((error) => {
+            logger.error(`Failed to initialize miner ${this.id}: ${error}`);
+        });
         
     }
 
