@@ -1,5 +1,6 @@
 const { supabase } = require('../modules/supabase');
 const { logger } = require('../modules/logger');
+const WebSocket = require('ws');
 
 class Miner {
     constructor(ws, wss, id, blockchain) {
