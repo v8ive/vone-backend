@@ -15,7 +15,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 
-const wss = new WebSocketServer({ port: 3000 });
+const wss = new WebSocketServer({ server: app });
 
 wss.on('connection', (ws) => {
     logger.info('Client connected');
