@@ -30,7 +30,7 @@ app.use('/health', healthCheckRoute);
 
 // Start the WebSocket server
 const wss = new WebSocket.Server({ server: app });
-logger.info('WebSocket server started :', wss);
+logger.info(wss);
 
 wss.on('connection', (ws) => {
     logger.info('Client connected');
