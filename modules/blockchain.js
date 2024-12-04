@@ -48,7 +48,7 @@ class Blockchain {
             .order('block_height', { ascending: true })
             .then((data) => {
                 if (data.data.length === 0) {
-                    this.chain.push(this.createGenesisBlock());
+                    this.addBlock(this.createGenesisBlock());
                     logger.info('Created Genesis Block');
                 } else {
                     this.chain = data.data; // Use existing blocks
@@ -80,34 +80,44 @@ class Blockchain {
     }
 
     async addBlock(newBlock) {
-        newBlock.previousHash = this.getLastBlock().hash;
-        newBlock.hash = newBlock.calculateHash();
-
-        if (this.isValidBlock(newBlock, this.getLastBlock())) {
-            this.chain.push(newBlock);
-
-            // Insert the new block into the database
-            try {
-                await supabase
-                    .from('blocks')
-                    .insert([{
-                        timestamp: newBlock.timestamp,
-                        previousHash: newBlock.previousHash,
-                        nonce: newBlock.nonce,
-                        transactions: JSON.stringify(newBlock.data.transactions),
-                        difficulty: this.difficulty,
-                        block_height: newBlock.index,
-                        miner_id: newBlock.minerId,
-                    }])
-                    .single();
-                logger.info('New block added to database:', newBlock);
-            } catch (error) {
-                logger.error('Error adding block to database:', error);
-            }
-
-            // Broadcast the new block
-            this.broadcastBlock(newBlock);
+        let isGenesisBlock = false;
+        if (this.chain.length === 0) {
+            isGenesisBlock = true;
         }
+
+        if (!isGenesisBlock) {
+            newBlock.previousHash = this.getLastBlock().hash;
+            newBlock.hash = newBlock.calculateHash();
+
+            // Validate the new block
+            if (!this.isValidBlock(newBlock, this.getLastBlock())) {
+                logger.error('Invalid block:', newBlock);
+                return;
+            }
+        }
+
+        // Insert the new block into the database
+        try {
+            await supabase
+                .from('blocks')
+                .insert([{
+                    timestamp: newBlock.timestamp,
+                    previousHash: newBlock.previousHash,
+                    nonce: newBlock.nonce,
+                    transactions: JSON.stringify(newBlock.data.transactions),
+                    difficulty: this.difficulty,
+                    block_height: newBlock.index,
+                    miner_id: newBlock.minerId,
+                }])
+                .single();
+            this.chain.push(newBlock);
+            logger.info('New block added to database:', newBlock);
+        } catch (error) {
+            logger.error('Error adding block to database, block failed to be added:', error);
+        }
+
+        // Broadcast the new block
+        this.broadcastBlock(newBlock);
     }
 
     async addMiner(userId, currencyCode) {
@@ -119,8 +129,8 @@ class Blockchain {
                 currency_code: currencyCode,
             }])
             .single();
-        
-            this.broadcastMiners(miner);
+
+        this.broadcastMiners(miner);
     }
 
     isValidBlock(newBlock, previousBlock) {
