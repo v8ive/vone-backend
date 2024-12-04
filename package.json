@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "@supabase/supabase-js": "^2.46.2"
+    "@supabase/supabase-js": "^2.46.2",
+    "crypto-js": "^4.2.0",
+    "ws": "^8.18.0"
   }
 }

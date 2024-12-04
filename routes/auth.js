@@ -31,7 +31,7 @@ router.get("/discord/callback", async function (req, res) {
             // - Store the session token in a cookie or local storage
             // - Redirect to a protected route or dashboard
 
-            res.redirect(303, 'http://localhost:5173/profile'); // Replace with your desired redirect URL
+            res.redirect(303, 'http://localhost:5173/'); // Replace with your desired redirect URL
 
         } catch (error) {
             logger.error('Unexpected error during authentication:', error);
