@@ -161,7 +161,6 @@ class Blockchain {
 }
 
 module.exports = {
-    Miner,
     Block,
     Blockchain,
 };

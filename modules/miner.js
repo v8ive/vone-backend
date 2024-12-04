@@ -1,6 +1,6 @@
 const { supabase } = require('../modules/supabase');
 
-export class Miner {
+class Miner {
     constructor(ws, id, blockchain) {
         this.ws = ws;
         this.blockchain = blockchain;
@@ -89,3 +89,5 @@ export class Miner {
         });
     }
 }
+
+module.exports = Miner;
