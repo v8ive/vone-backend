@@ -23,10 +23,7 @@ class Miner {
                     data.data[0].mining,
                     data.data[0].status,
                     data.data[0].currency_code;
-            }).catch((error) => {
-                logger.error('Failed to fetch miner data');
-                return;
-            });
+            })
         
     }
 
