@@ -44,34 +44,34 @@ class Blockchain {
             .select('*')
             .order('block_height', { ascending: true })
             .then((data) => {
-                logger.info(data);
                 return data.data;
             }).catch((error) => {
                 logger.error(error);
             });
         this.difficulty = 2; // Adjust difficulty as needed
-            
+
     }
 
     getLastBlock() {
+        if (!this.chain || this.chain.length === 0) {
+            return null; // Return null if there's no previous block
+        }
         return this.chain[this.chain.length - 1];
     }
 
     async addBlock(newBlock) {
-        let isGenesisBlock = false;
-        if (this.chain.length === 0) {
-            isGenesisBlock = true;
+        if (!this.getLastBlock()) {
+            newBlock.previousHash = "0"; // Or any other suitable default value
+        } else {
+            newBlock.previousHash = this.getLastBlock().hash;
         }
 
-        if (!isGenesisBlock) {
-            newBlock.previousHash = this.getLastBlock().hash;
-            newBlock.hash = newBlock.calculateHash();
+        newBlock.hash = newBlock.calculateHash();
 
-            // Validate the new block
-            if (!this.isValidBlock(newBlock, this.getLastBlock())) {
-                logger.error('Invalid block:', newBlock);
-                return;
-            }
+        // Validate the new block
+        if (!this.isValidBlock(newBlock, this.getLastBlock())) {
+            logger.error('Invalid block:', newBlock);
+            return;
         }
 
         // Insert the new block into the database
@@ -111,7 +111,7 @@ class Blockchain {
                 currency_code: currencyCode,
             }])
             .single();
-        
+
         if (error) {
             logger.error('Error adding miner:', error);
             return;
