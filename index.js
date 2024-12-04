@@ -35,6 +35,7 @@ const server = createServer(app);
 const wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws, req) => {
+    console.log(req.query)
     const userId = req.query.userId;
     ws.userId = userId;
 
