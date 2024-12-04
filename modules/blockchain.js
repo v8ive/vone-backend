@@ -25,7 +25,7 @@ class Block {
         const data = JSON.stringify({
             index: this.index,
             timestamp: this.timestamp,
-            data: this.data,
+            data: this.data || {},
             previousHash: this.previousHash,
             nonce: this.nonce
         });
@@ -67,6 +67,7 @@ class Blockchain {
             {
                 // Add actual block data here (e.g., transactions)
                 message: "Genesis Block!",
+                transactions: []
             },
             "0",
             0,
