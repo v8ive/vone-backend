@@ -2,6 +2,7 @@ const cryptoJS = require("crypto-js");
 const { supabase } = require('../modules/supabase');
 const { logger } = require('../modules/logger');
 const { hash: cryptoHash } = require("crypto");
+const WebSocket = require('ws');
 
 class Miner {
     constructor(id, miningPower) {
