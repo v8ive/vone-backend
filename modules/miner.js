@@ -1,11 +1,11 @@
 const { supabase } = require('../modules/supabase');
 const { logger } = require('../modules/logger');
-const WebSocket = require('ws');
 
 class Miner {
-    constructor(client, wss, id, blockchain) {
-        this.client = client; // WebSocket (client)
-        this.wss = wss; // WebSocket server
+    constructor(ws, wss, client, id, blockchain) {
+        this.ws = ws;
+        this.client = client;
+        this.wss = wss;
         this.blockchain = blockchain;
         this.id = id;
 

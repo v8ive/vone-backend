@@ -34,18 +34,18 @@ app.use('/health', healthCheckRoute);
 const server = createServer(app);
 const wss = new WebSocket.Server({ server });
 
-wss.on('connection', (client, req) => {
+wss.on('connection', (ws, req, client) => {
 
     logger.info('Client connected');
 
     const blockchain = new Blockchain(wss);
 
-    client.onmessage = async (message) => {
+    ws.onmessage = async (message) => {
         data = JSON.parse(message.data);
 
         if (data.action === 'miner_power_on') {
             logger.info(`Powering on miner : ${data.minerId}`);
-            const miner = new Miner(client, wss, data.minerId, blockchain);
+            const miner = new Miner(ws, wss, client, data.minerId, blockchain);
             if (!miner) {
                 logger.error('Miner not found');
                 return;
@@ -58,7 +58,7 @@ wss.on('connection', (client, req) => {
         }
         if (data.action === 'miner_power_off') {
             logger.info(`Powering off miner : ${data.minerId}`);
-            const miner = new Miner(client, wss, data.minerId, blockchain);
+            const miner = new Miner(ws, wss, client, data.minerId, blockchain);
             await miner.initialize();
             if (!miner) {
                 logger.error('Miner not found');
@@ -72,7 +72,7 @@ wss.on('connection', (client, req) => {
         }
         if (data.action === 'miner_start') {
             logger.info(`Miner Starting : ${data.minerId}`);
-            const miner = new Miner(client, wss, data.minerId, blockchain);
+            const miner = new Miner(ws, wss, client, data.minerId, blockchain);
             if (!miner) {
                 logger.error('Miner not found');
                 return;
@@ -89,7 +89,7 @@ wss.on('connection', (client, req) => {
         }
     };
 
-    client.onclose = () => {
+    ws.onclose = () => {
         logger.info('Client disconnected');
     };
 
