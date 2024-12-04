@@ -48,11 +48,11 @@ wss.on('connection', (ws, require) => {
             const miner = new Miner(ws, wss, data.minerId, blockchain);
             if (!miner) {
                 logger.error('Miner not found');
-                return;
+                return false;
             }
             if (miner.isActive) {
                 logger.error('Miner is already powered on');
-                return;
+                return false;
             }
             return await miner.powerOn();
         }
@@ -62,11 +62,11 @@ wss.on('connection', (ws, require) => {
             await miner.initialize();
             if (!miner) {
                 logger.error('Miner not found');
-                return;
+                return false;
             }
             if (!miner.isActive) {
                 logger.error('Miner is already powered off');
-                return;
+                return false;
             }
             return await miner.powerOff();
         }
@@ -75,15 +75,15 @@ wss.on('connection', (ws, require) => {
             const miner = new Miner(ws, wss, data.minerId, blockchain);
             if (!miner) {
                 logger.error('Miner not found');
-                return;
+                return false;
             }
             if (!miner.isActive) {
                 logger.error('Miner is not powered on');
-                return;
+                return false;
             }
             if (miner.isMining) {
                 logger.error('Miner is already mining');
-                return;
+                return false;
             }
             return await miner.mine();
         }

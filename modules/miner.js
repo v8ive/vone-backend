@@ -52,7 +52,6 @@ class Miner {
         logger.info(`Broadcasting status update: ${message}`);
         this.wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
-                logger.info(`Sending status update to client: ${client}`);
                 client.send(JSON.stringify({
                     action: 'miner_status_update',
                     data: {
@@ -73,12 +72,13 @@ class Miner {
 
         if (error) {
             logger.error('Failed to power on miner', error);
-            return;
+            return false;
         }
 
         this.isActive = true;
         this.status = 'online';
         this.broadcastStatus('Powered On');
+        return true;
     }
     
     async powerOff() {
@@ -90,12 +90,13 @@ class Miner {
 
         if (error) {
             logger.error('Failed to power off miner', error);
-            return;
+            return false;
         }
 
         this.isActive = false;
         this.status = 'offline';
         this.broadcastStatus('Powered Off');
+        return true
     }
 
     async mine() {
