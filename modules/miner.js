@@ -2,7 +2,7 @@ const { supabase } = require('../modules/supabase');
 const { logger } = require('../modules/logger');
 
 class Miner {
-    constructor(ws, wss, client, id, blockchain) {
+    constructor(ws, wss, id, blockchain) {
         this.ws = ws;
         this.client = client;
         this.wss = wss;
@@ -50,7 +50,7 @@ class Miner {
 
     broadcastStatus = (message) => {
         logger.info(`Broadcasting status update: ${message}`);
-        this.client.send(JSON.stringify({
+        this.ws.send(JSON.stringify({
             action: 'miner_status_update',
             data: {
                 miner: this,
@@ -70,7 +70,10 @@ class Miner {
                 this.status = 'online';
                 this.broadcastStatus('Powered On');
                 return;
-            })
+            }).catch((error) => {
+                logger.error('Failed to power on miner');
+                return;
+            });
     }
     
     async powerOff() {
@@ -84,7 +87,10 @@ class Miner {
                 this.status = 'offline';
                 this.broadcastStatus('Powered Off');
                 return;
-            })
+            }).catch((error) => {
+                logger.error('Failed to power off miner');
+                return;
+            });
     }
 
     async mine() {
