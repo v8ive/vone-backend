@@ -47,9 +47,9 @@ class Blockchain {
             .from('blocks')
             .select('*')
             .order('block_height', { ascending: true })
-            .then((data) => {
+            .then((data) => async () => {
                 if (data.data.length === 0) {
-                    this.addBlock(this.createGenesisBlock());
+                    await this.addBlock(this.createGenesisBlock());
                     logger.info('Created Genesis Block');
                 } else {
                     this.chain = data.data; // Use existing blocks
