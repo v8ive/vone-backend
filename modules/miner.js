@@ -7,28 +7,42 @@ class Miner {
         this.wss = wss;
         this.blockchain = blockchain;
         this.id = id;
+
+        this.user_id = null;
+        this.hash_rate = null;
+        this.isActive = false;
+        this.isMining = false;
+        this.status = 'unknown';
+        this.currency_code = null;
+
+        useEffect(() => {
+            this.initialize();
+        }, []);
         
-        this.user_id, 
-        this.hash_rate,
-        this.isActive,
-        this.isMining,
-        this.status,
-        this.currency_code = supabase
-            .from('miners')
-            .select('*')
-            .eq('id', id)
-            .then((data) => {
-                return data.data[0].user_id, 
-                    data.data[0].hash_rate,
-                    data.data[0].isActive,
-                    data.data[0].mining,
-                    data.data[0].status,
-                    data.data[0].currency_code;
-            }).catch((error) => {
-                logger.error('Failed to fetch miner data');
+    }
+
+    async initialize() {
+        try {
+            const { data, error } = await supabase
+                .from('miners')
+                .select('*')
+                .eq('id', this.id)
+                .single();
+
+            if (error) {
+                logger.error(`Failed to fetch miner data: ${error.message}`);
                 return;
-            });
-        
+            }
+
+            this.user_id = data.user_id;
+            this.hash_rate = data.hash_rate;
+            this.isActive = data.isActive;
+            this.isMining = data.mining; // Assuming "mining" property exists
+            this.status = data.status;
+            this.currency_code = data.currency_code;
+        } catch (error) {
+            logger.error(`Unexpected error fetching miner data: ${error}`);
+        }
     }
 
     broadcastStatus = (message) => {
