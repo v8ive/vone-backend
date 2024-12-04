@@ -54,10 +54,7 @@ class Miner {
                 this.status = 'online';
                 this.broadcastStatus('Powered On');
                 return;
-            }).catch((error) => {
-                logger.error('Failed to power on miner');
-                return;
-            });
+            })
     }
     
     async powerOff() {
