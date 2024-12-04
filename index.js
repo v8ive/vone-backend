@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
-const WebSocketServer = require('ws');
+const WebSocket = require('ws');
 
 const { logger } = require('./modules/logger');
 
@@ -15,7 +15,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 
-const wss = new WebSocketServer({ server: app });
+const wss = new WebSocket.Server({ server: app });
 
 wss.on('connection', (ws) => {
     logger.info('Client connected');
