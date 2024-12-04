@@ -1,6 +1,7 @@
 const { supabase } = require('../modules/supabase');
 const { logger } = require('../modules/logger');
 const WebSocket = require('ws');
+const { log } = require('console');
 
 class Miner {
     constructor(ws, wss, id, blockchain) {
@@ -50,7 +51,8 @@ class Miner {
 
     broadcastStatus = (message) => {
         logger.info(`Broadcasting status update: ${message}`);
-        this.wss.clients.forEach((client) => {
+        this.ws.clients.forEach((client) => {
+            logger.info(`Sending status update to client: ${client}`);
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({
                     action: 'miner_status_update',
