@@ -1,7 +1,7 @@
 const cryptoJS = require("crypto-js");
 const { supabase } = require('../modules/supabase');
 const { logger } = require('../modules/logger');
-const { hash } = require("crypto");
+const { hash: cryptoHash } = require("crypto");
 
 class Miner {
     constructor(id, miningPower) {
@@ -30,7 +30,7 @@ class Block {
             nonce: this.nonce
         });
 
-        const hash = hash('sha256').update(data).digest('hex');
+        const hash = cryptoHash('sha256').update(data).digest('hex');
         return hash;
     }
 }
