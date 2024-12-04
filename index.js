@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 const WebSocket = require('ws');
+const { createServer } = require('http');
 
 const { logger } = require('./modules/logger');
 
@@ -29,7 +30,8 @@ app.use('/auth', require('./routes/auth'));
 app.use('/health', healthCheckRoute);
 
 // Start the WebSocket server
-const wss = new WebSocket.Server({ server: app });
+const server = createServer(app);
+const wss = new WebSocket.Server({ server });
 logger.info(wss);
 
 wss.on('connection', (ws) => {
