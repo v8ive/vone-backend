@@ -2,8 +2,8 @@ const { supabase } = require('../modules/supabase');
 const { logger } = require('../modules/logger');
 
 class Miner {
-    constructor(ws, id, blockchain) {
-        this.ws = ws;
+    constructor(wss, id, blockchain) {
+        this.wss = wss;
         this.blockchain = blockchain;
         this.id = id;
         
@@ -54,7 +54,10 @@ class Miner {
                 this.status = 'online';
                 this.broadcastStatus('Powered On');
                 return;
-            })
+            }).catch((error) => {
+                logger.error('Failed to power on miner');
+                return;
+            });
     }
     
     async powerOff() {
