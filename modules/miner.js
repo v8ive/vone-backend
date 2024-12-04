@@ -41,7 +41,7 @@ class Miner {
                 broadcastStatus('Powered On');
                 return;
             }).catch((error) => {
-                logger.error(error);
+                logger.error('Failed to power on miner');
                 return;
             });
     }
@@ -57,7 +57,7 @@ class Miner {
                 broadcastStatus('Powered Off');
                 return;
             }).catch((error) => {
-                logger.error(error);
+                logger.error('Failed to power off miner');
                 return;
             });
     }
@@ -72,7 +72,7 @@ class Miner {
                 broadcastStatus('Started Mining');
                 return;
             }).catch((error) => {
-                logger.error(error);
+                logger.error('Failed to start mining');
                 return;
             });
         await this.blockchain.mineBlock(this);
