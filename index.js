@@ -56,6 +56,6 @@ wss.on('connection', (ws) => {
 });
 
 
-app.listen(port, () => {
+server.listen(port, () => {
     logger.info(`Server listening on port ${port}`);
 });
