@@ -25,6 +25,7 @@ class Miner {
                     data.data[0].currency_code;
             }).catch((error) => {
                 logger.error(error);
+                return;
             });
         
     }
@@ -38,10 +39,10 @@ class Miner {
                 this.isActive = true;
                 this.status = 'online';
                 broadcastStatus('Powered On');
-                return True;
+                return;
             }).catch((error) => {
                 logger.error(error);
-                return False;
+                return;
             });
     }
     
@@ -54,10 +55,10 @@ class Miner {
                 this.isActive = false;
                 this.status = 'offline';
                 broadcastStatus('Powered Off');
-                return True;
+                return;
             }).catch((error) => {
                 logger.error(error);
-                return False;
+                return;
             });
     }
 
@@ -69,9 +70,10 @@ class Miner {
             .then((data) => {
                 this.status = 'mining';
                 broadcastStatus('Started Mining');
-                return True;
+                return;
             }).catch((error) => {
                 logger.error(error);
+                return;
             });
         await this.blockchain.mineBlock(this);
     }
