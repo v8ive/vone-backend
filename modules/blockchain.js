@@ -118,7 +118,7 @@ class Blockchain {
         }
 
         // Broadcast the new block
-        this.broadcastBlock(newBlock);
+        this.broadcastNewBlock(newBlock);
     }
 
     async addMiner(userId, currencyCode) {
@@ -131,7 +131,7 @@ class Blockchain {
             }])
             .single();
 
-        this.broadcastMiners(miner);
+        this.broadcastNewMiner(miner);
     }
 
     isValidBlock(newBlock, previousBlock) {
@@ -185,41 +185,29 @@ class Blockchain {
     }
 
     // Broadcast functionality
-    broadcastBlock(newBlock) {
-        // Assuming you have a WebSocket server named `wss`
-        logger.info('Broadcasting new block to miners:', newBlock);
+    broadcastNewBlock(block) {
+        logger.info('Broadcasting new Block:', block);
         this.ws.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify(newBlock));
+                client.send(JSON.stringify({
+                    action: 'new_block',
+                    data: block
+                }));
             }
         });
     }
 
-    broadcastMiners(miners) {
-        // Assuming you have a WebSocket server named `wss`
-        logger.info('Broadcasting updated miners:', miners);
+    broadcastNewMiner(miner) {
+        logger.info('Broadcasting new Miner:', miner);
         this.ws.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify(miners));
+                client.send(JSON.stringify({
+                    action: 'new_miner',
+                    data: miner
+                }));
             }
         });
     }
-}
-
-async function initializeMiners(blockchain) {
-    const { data: miners, error } = await supabase
-        .from('miners')
-        .select('*')
-
-    logger.info('Initializing miners:', miners);
-
-    // Start mining for each miner
-    miners.forEach((miner) => {
-        logger.info(`Starting miner ${miner.id}`);
-        setInterval(() => {
-            const newBlock = blockchain.mineBlock(miner);
-        }, 1000); // Adjust the interval as needed
-    });
 }
 
 module.exports = {

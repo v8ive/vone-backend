@@ -10,7 +10,7 @@ const { logger } = require('./modules/logger');
 const healthCheckRoute = require('./routes/healthCheck');
 
 const multer = require('multer');  // For handling file uploads
-const { initializeMiners, Blockchain } = require('./modules/blockchain');
+const { Blockchain } = require('./modules/blockchain');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -40,6 +40,7 @@ wss.on('connection', (ws) => {
 
     ws.onmessage = async (message) => {
         messageJson = JSON.parse(message.data);
+
         if (messageJson.action === 'add_miner') {
             logger.info('Adding miner');
             await blockchain.addMiner(messageJson.userId, messageJson.currencyCode);
@@ -49,10 +50,6 @@ wss.on('connection', (ws) => {
     ws.onclose = () => {
         logger.info('Client disconnected');
     };
-
-    // Send initial blockchain state to the client
-    initializeMiners(blockchain);
-    ws.send(JSON.stringify(blockchain));
 
 });
 
