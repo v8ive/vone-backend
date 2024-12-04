@@ -38,15 +38,13 @@ wss.on('connection', (ws) => {
 
     const blockchain = new Blockchain(wss);
 
-    ws.onmessage = (message) => {
-        logger.info('Received message:', message);
-    };
-
-    ws.on('message', async (message) => {
-        if (message === 'add_miner') {
-            await blockchain.addMiner();
+    ws.onmessage = async (message) => {
+        messageJson = JSON.parse(message.data);
+        if (messageJson.action === 'add_miner') {
+            logger.info('Adding miner');
+            await blockchain.addMiner(messageJson.userId, messageJson.currencyCode);
         }
-    });
+    };
 
     ws.onclose = () => {
         logger.info('Client disconnected');
