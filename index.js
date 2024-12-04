@@ -11,6 +11,7 @@ const healthCheckRoute = require('./routes/healthCheck');
 
 const multer = require('multer');  // For handling file uploads
 const { Blockchain } = require('./modules/blockchain');
+const { Miner } = require('./modules/miner');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -33,17 +34,59 @@ app.use('/health', healthCheckRoute);
 const server = createServer(app);
 const wss = new WebSocket.Server({ server });
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
+    const userId = req.query.userId;
+    ws.userId = userId;
+
     logger.info('Client connected');
 
     const blockchain = new Blockchain(wss);
 
     ws.onmessage = async (message) => {
-        messageJson = JSON.parse(message.data);
+        data = JSON.parse(message.data);
 
-        if (messageJson.action === 'add_miner') {
-            logger.info('Adding miner');
-            await blockchain.addMiner(messageJson.userId, messageJson.currencyCode);
+        if (messageJson.action === 'miner_power_on') {
+            logger.info(`Powering on miner : ${data.minerId}`);
+            const miner = new Miner(ws, data.minerId, blockchain);
+            if (!miner) {
+                logger.error('Miner not found');
+                return False;
+            }
+            if (miner.isActive) {
+                logger.error('Miner is already powered on');
+                return False;
+            }
+            return await miner.powerOn();
+        }
+        if (messageJson.action === 'miner_power_off') {
+            logger.info(`Powering off miner : ${data.minerId}`);
+            const miner = new Miner(ws, data.minerId, blockchain);
+            if (!miner) {
+                logger.error('Miner not found');
+                return False;
+            }
+            if (!miner.isActive) {
+                logger.error('Miner is already powered off');
+                return False;
+            }
+            return await miner.powerOff();
+        }
+        if (messageJson.action === 'miner_start') {
+            logger.info(`Miner Starting : ${data.minerId}`);
+            const miner = new Miner(ws, data.minerId, blockchain);
+            if (!miner) {
+                logger.error('Miner not found');
+                return False;
+            }
+            if (!miner.isActive) {
+                logger.error('Miner is not powered on');
+                return False;
+            }
+            if (miner.isMining) {
+                logger.error('Miner is already mining');
+                return False;
+            }
+            return await miner.mine();
         }
     };
 

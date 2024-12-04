@@ -3,13 +3,7 @@ const { supabase } = require('../modules/supabase');
 const { logger } = require('../modules/logger');
 const { hash: cryptoHash } = require("crypto");
 const WebSocket = require('ws');
-
-class Miner {
-    constructor(id, miningPower) {
-        this.id = id;
-        this.miningPower = miningPower;
-    }
-}
+const { Miner } = require('./miner');
 
 class Block {
     constructor(index, timestamp, data, previousHash, nonce, minerId) {
@@ -102,24 +96,6 @@ class Blockchain {
         this.broadcastNewBlock(newBlock);
     }
 
-    async addMiner(userId, currencyCode) {
-        const { data: miner, error } = await supabase
-            .from('miners')
-            .insert([{
-                user_id: userId,
-                hash_rate: 1, // Default hash rate
-                currency_code: currencyCode,
-            }])
-            .single();
-
-        if (error) {
-            logger.error('Error adding miner:', error);
-            return;
-        }
-
-        this.broadcastNewMiner(miner);
-    }
-
     isValidBlock(newBlock, previousBlock) {
         if (newBlock.index !== previousBlock.index + 1) {
             return false; // Incorrect index
@@ -143,7 +119,7 @@ class Blockchain {
     async mineBlock(miner) {
         logger.info(`Mining block for miner ${miner.id}`);
         let nonce = 0;
-        const targetDifficulty = this.difficulty * miner.miningPower;
+        const targetDifficulty = this.difficulty * miner.hash_rate;
 
         do {
             const transactions = await fetchPendingTransactions();
@@ -178,18 +154,6 @@ class Blockchain {
                 client.send(JSON.stringify({
                     action: 'new_block',
                     data: block
-                }));
-            }
-        });
-    }
-
-    broadcastNewMiner(miner) {
-        logger.info('Broadcasting new Miner:', miner);
-        this.ws.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify({
-                    action: 'new_miner',
-                    data: miner
                 }));
             }
         });
