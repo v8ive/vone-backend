@@ -49,6 +49,7 @@ class Miner {
     }
 
     broadcastStatus = (message) => {
+        logger.info(`Broadcasting status update: ${message}`);
         this.client.send(JSON.stringify({
             action: 'miner_status_update',
             data: {
