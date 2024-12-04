@@ -50,7 +50,7 @@ wss.on('connection', (ws, req) => {
     ws.onmessage = async (message) => {
         data = JSON.parse(message.data);
 
-        if (messageJson.action === 'miner_power_on') {
+        if (data.action === 'miner_power_on') {
             logger.info(`Powering on miner : ${data.minerId}`);
             const miner = new Miner(ws, data.minerId, blockchain);
             if (!miner) {
@@ -63,7 +63,7 @@ wss.on('connection', (ws, req) => {
             }
             return await miner.powerOn();
         }
-        if (messageJson.action === 'miner_power_off') {
+        if (data.action === 'miner_power_off') {
             logger.info(`Powering off miner : ${data.minerId}`);
             const miner = new Miner(ws, data.minerId, blockchain);
             if (!miner) {
@@ -76,7 +76,7 @@ wss.on('connection', (ws, req) => {
             }
             return await miner.powerOff();
         }
-        if (messageJson.action === 'miner_start') {
+        if (data.action === 'miner_start') {
             logger.info(`Miner Starting : ${data.minerId}`);
             const miner = new Miner(ws, data.minerId, blockchain);
             if (!miner) {
