@@ -66,6 +66,7 @@ wss.on('connection', (ws, req) => {
         if (data.action === 'miner_power_off') {
             logger.info(`Powering off miner : ${data.minerId}`);
             const miner = new Miner(wss, data.minerId, blockchain);
+            await miner.initialize();
             if (!miner) {
                 logger.error('Miner not found');
                 return;
