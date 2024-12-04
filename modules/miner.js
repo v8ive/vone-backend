@@ -49,15 +49,13 @@ class Miner {
 
     broadcastStatus = (message) => {
         this.wss.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN && client.userId === this.user_id) {
-                client.send(JSON.stringify({
-                    action: 'miner_status_update',
-                    data: {
-                        miner: this,
-                        message
-                    }
-                }));
-            }
+            client.send(JSON.stringify({
+                action: 'miner_status_update',
+                data: {
+                    miner: this,
+                    message
+                }
+            }));
         });
     }
 
