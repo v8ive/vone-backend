@@ -11,7 +11,7 @@ const healthCheckRoute = require('./routes/healthCheck');
 
 const multer = require('multer');  // For handling file uploads
 const { Blockchain } = require('./modules/blockchain');
-const { Miner } = require('./modules/miner');
+const Miner = require('./modules/miner');
 
 const app = express();
 const port = process.env.PORT || 3000;
