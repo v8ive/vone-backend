@@ -25,12 +25,12 @@ class Block {
         const data = JSON.stringify({
             index: this.index,
             timestamp: this.timestamp,
-            data: this.data || {},
+            data: this.data,
             previousHash: this.previousHash,
             nonce: this.nonce
         });
 
-        const hash = cryptoHash('sha256').update(data).digest('hex');
+        const hash = cryptoHash('sha256', data, 'hex');
         return hash;
     }
 }
