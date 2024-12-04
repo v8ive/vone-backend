@@ -214,5 +214,4 @@ module.exports = {
     Miner,
     Block,
     Blockchain,
-    initializeMiners,
 };
