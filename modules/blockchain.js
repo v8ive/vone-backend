@@ -43,12 +43,11 @@ class Blockchain {
         this.difficulty = 2; // Adjust difficulty as needed
 
         // Check for existing blocks and create a genesis block if necessary
-        const blocks = supabase
+        supabase
             .from('blocks')
             .select('*')
             .order('block_height', { ascending: true })
             .then((data) => async () => {
-                logger.info('Fetched existing blocks from database:', data.data);
                 if (data.data.length === 0) {
                     await this.addBlock(this.createGenesisBlock());
                     logger.info('Created Genesis Block');
