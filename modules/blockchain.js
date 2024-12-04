@@ -39,26 +39,21 @@ class Block {
 class Blockchain {
     constructor(ws) {
         this.ws = ws; // WebSocket server
-        this.chain = []; // Initialize empty chain
-        this.difficulty = 2; // Adjust difficulty as needed
-
-        // Check for existing blocks and create a genesis block if necessary
-        supabase
+        this.chain = supabase
             .from('blocks')
             .select('*')
             .order('block_height', { ascending: true })
-            .then((data) => async () => {
-                if (data.data.length === 0) {
-                    await this.addBlock(this.createGenesisBlock());
-                    logger.info('Created Genesis Block');
-                } else {
-                    this.chain = data.data; // Use existing blocks
-                    logger.info('Fetched existing blocks from database');
-                }
-            })
-            .catch((error) => {
+            .then((data) => {
+                return data.data;
+            }).catch((error) => {
                 logger.error('Error fetching or creating blocks:', error);
             });
+        this.difficulty = 2; // Adjust difficulty as needed
+
+        if (this.chain.length === 0) {
+            this.chain.push(this.createGenesisBlock());
+        }
+            
     }
 
     createGenesisBlock() {
