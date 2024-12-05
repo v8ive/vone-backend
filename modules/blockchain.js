@@ -85,7 +85,7 @@ class Blockchain {
                 .from('blocks')
                 .insert([{
                     timestamp: newBlock.timestamp,
-                    previousHash: newBlock.previousHash,
+                    previous_hash: newBlock.previousHash,
                     nonce: newBlock.nonce,
                     transactions: JSON.stringify(newBlock.transactions),
                     difficulty: this.difficulty,
