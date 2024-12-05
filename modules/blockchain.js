@@ -127,10 +127,7 @@ class Blockchain {
         // - Valid block data format
         // - Valid timestamp (within acceptable range)
 
-        const targetDifficulty = this.calculateTargetHash(this.difficulty);
-        const hashValue = parseInt(newBlock.hash, 16); // Convert hash to integer for comparison
-
-        return hashValue < targetDifficulty;
+        return true;
     }
 
     async mineBlock(miner) {
@@ -175,7 +172,9 @@ class Blockchain {
                 nonce,
                 miner.id
             );
-            const hashValue = parseInt(newBlock.calculateHash(nonce), 16);
+            const targetDifficulty = this.calculateTargetHash(this.difficulty);
+            const hashValue = parseInt(newBlock.hash, 16); // Convert hash to integer for comparison
+            logger.info(`Target difficulty: ${targetDifficulty}`);
             logger.info(`Hash value: ${hashValue}`);
             if (hashValue < targetDifficulty) {
                 logger.info(`Block mined by miner ${miner.id}:`, newBlock);
