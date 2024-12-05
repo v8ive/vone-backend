@@ -55,7 +55,7 @@ wss.on('connection', async (ws, req) => {
     const blockchain = new Blockchain(wss);
     await blockchain.initialize();
 
-    const { userData, error: fetchError } = await supabase
+    const { data: userData, error: fetchError } = await supabase
         .from('users')
         .select('*')
         .eq('user_id', user_id)
