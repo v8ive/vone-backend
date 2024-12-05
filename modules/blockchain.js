@@ -172,7 +172,7 @@ class Blockchain {
                         .from('transactions')
                         .select('*')
                         .eq('status', 'pending')
-                        .eq('block_id', this.getLastBlock().id)
+                        .eq('block_height', this.getLastBlock().block_height)
                         .order('timestamp', { ascending: true });
 
                     if (error) {
