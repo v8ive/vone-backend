@@ -55,9 +55,9 @@ wss.on('connection', (ws, req) => {
 
     const blockchain = new Blockchain(wss);
 
-    // ws.on('open', async () => {
-    //     logger.info(`client connected`);
-    // });
+    ws.on('open', async () => {
+        logger.info(`client connected`);
+    });
 
     ws.onopen = async () => {
         logger.info(`${user_id} connected`);
