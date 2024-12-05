@@ -106,6 +106,12 @@ class Blockchain {
         this.broadcastNewBlock(newBlock);
     }
 
+    calculateTargetHash(difficulty) {
+        // Adjust this formula based on your desired difficulty level
+        const highestHashValue = Math.pow(2, 256) - 1; // Maximum possible hash value
+        return highestHashValue / (difficulty + 1);
+    }
+
     isValidBlock(newBlock, previousBlock) {
         if (newBlock.index !== previousBlock.index + 1) {
             return false; // Incorrect index
@@ -123,17 +129,20 @@ class Blockchain {
         // - Valid block data format
         // - Valid timestamp (within acceptable range)
 
-        return true;
+        const targetDifficulty = this.calculateTargetHash(this.difficulty);
+        const hashValue = parseInt(newBlock.hash, 16); // Convert hash to integer for comparison
+
+        return hashValue < targetDifficulty;
     }
 
     async mineBlock(miner) {
         await this.initialize();
-        let nonce = 0;
         let mining = true;
-        const targetDifficulty = this.difficulty * miner.hash_rate;
+        let nonce = 0;
+        const targetDifficulty = this.calculateTargetHash(this.difficulty);
 
         do {
-            logger.info(`Miner ${miner.id} mining block...` + nonce.toString());
+            logger.info(`Miner ${miner.id} mining block with difficulty ${targetDifficulty.toString()}...` + nonce.toString());
             const miningStatus = await supabase
                 .from('miners')
                 .select('mining')
@@ -168,8 +177,9 @@ class Blockchain {
                 nonce,
                 miner.id
             );
-
-            if (newBlock.hash.startsWith('0'.repeat(targetDifficulty))) {
+            const hashValue = parseInt(newBlock.calculateHash(nonce), 16);
+            logger.info(`Hash value: ${hashValue}`);
+            if (hashValue < targetDifficulty) {
                 logger.info(`Block mined by miner ${miner.id}:`, newBlock);
                 this.addBlock(newBlock);
                 return newBlock;
