@@ -48,61 +48,54 @@ const wss = new WebSocket.Server({ server });
 const connections = [];
 const users = [];
 
-wss.on('connection', (ws, req) => {
+wss.on('connection', async (ws, req) => {
 
     logger.info('Client connected');
     const { user_id } = url.parse(req.url, true).query;
 
     const blockchain = new Blockchain(wss);
 
-    ws.on('open', async () => {
-        logger.info(`client connected`);
+    await blockchain.initialize();
+    const { data, error: fetchError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('user_id', user_id)
+
+    if (fetchError) {
+        logger.error(`Failed to fetch user data: ${error.message}`);
+        return;
+    }
+
+    const { error: updateError } = await supabase
+        .from('users')
+        .update({ status: 'online' })
+        .eq('user_id', user_id);
+
+    if (updateError) {
+        logger.error(`Failed to update user status: ${error.message}`);
+        return;
+    }
+
+    connections[user_id] = ws;
+    users[user_id] = {
+        username: data.username,
+        state: {
+            status: 'online',
+        }
+    }
+    const message = {
+        action: 'user_status_update',
+        data: {
+            user_id,
+            user: users[user_id],
+            message: 'connected'
+        }
+    }
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN && client !== ws) {
+            client.send(JSON.stringify(message));
+        }
     });
-
-    ws.onopen = async () => {
-        logger.info(`${user_id} connected`);
-        await blockchain.initialize();
-        const { data, error: fetchError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('user_id', user_id)
-        
-        if (fetchError) {
-            logger.error(`Failed to fetch user data: ${error.message}`);
-            return;
-        }
-        
-        const { error: updateError } = await supabase
-            .from('users')
-            .update({ status: 'online' })
-            .eq('user_id', user_id);
-        
-        if (updateError) {
-            logger.error(`Failed to update user status: ${error.message}`);
-            return;
-        }
-
-        connections[user_id] = ws;
-        users[user_id] = {
-            username: data.username,
-            state: {
-                status: 'online',
-            }
-        }
-        const message = {
-            action: 'user_status_update',
-            data: {
-                user_id,
-                user: users[user_id],
-                message: 'connected'
-            }
-        }
-        wss.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN && client !== ws) {
-                client.send(JSON.stringify(message));
-            }
-        });
-    };
 
     ws.onmessage = async (message) => {
         data = JSON.parse(message.data);
