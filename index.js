@@ -13,6 +13,7 @@ const multer = require('multer');  // For handling file uploads
 const { Blockchain } = require('./modules/blockchain');
 const Miner = require('./modules/miner');
 const { supabase } = require('./modules/supabase');
+const connectionsService = require('./modules/connections');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -44,13 +45,16 @@ if (DEV) {
 }
 const wss = new WebSocket.Server({ server });
 
-const connections = [];
-const users = [];
-
 wss.on('connection', async (ws, req) => {
 
     logger.info('Client connected');
     const { user_id } = url.parse(req.url, true).query;
+
+    if (!user_id) {
+        logger.error('User ID is required');
+        ws.close();
+        return;
+    }
 
     const blockchain = new Blockchain(wss);
     await blockchain.initialize();
@@ -60,7 +64,7 @@ wss.on('connection', async (ws, req) => {
         .select('*')
         .eq('user_id', user_id)
     if (fetchError) {
-        logger.error(`Failed to fetch user data: ${error.message}`);
+        logger.error(`Failed to fetch user data: ${fetchError.message}`);
         return;
     }
 
@@ -69,22 +73,16 @@ wss.on('connection', async (ws, req) => {
         .update({ status: 'online' })
         .eq('user_id', user_id);
     if (updateError) {
-        logger.error(`Failed to update user status: ${error.message}`);
+        logger.error(`Failed to update user status: ${updateError.message}`);
         return;
     }
 
-    connections[user_id] = ws;
-    users[user_id] = {
-        username: userData.username,
-        state: {
-            status: 'online',
-        }
-    }
+    connectionsService.addConnection(user_id, ws, userData);
     const message = {
         action: 'user_status_update',
         data: {
             user_id,
-            user: users[user_id],
+            user: connectionsService.getUser(user_id),
             message: 'connected'
         }
     }
@@ -173,9 +171,8 @@ wss.on('connection', async (ws, req) => {
     ws.onclose = async () => {
         logger.info('Client disconnected');
 
-        const user = users[user_id];
-        delete connections[user_id];
-        delete users[user_id];
+        const user = connectionsService.getUser(user_id);
+        connectionsService.removeConnection(user_id);
 
         const { error } = await supabase
             .from('users')
@@ -190,7 +187,7 @@ wss.on('connection', async (ws, req) => {
             action: 'user_status_update',
             data: {
                 user_id,
-                user: users[user.user_id],
+                user,
                 message: 'disconnected'
             }
         }

@@ -194,16 +194,15 @@ class Blockchain {
             }
             const targetDifficulty = this.calculateTargetHash(this.difficulty);
             const hashValue = parseInt(newBlock.hash, 16); // Convert hash to integer for comparison
-            logger.info(`Target difficulty: ${targetDifficulty}`);
-            logger.info(`Block Hash value: ${hashValue}`);
             if (hashValue < targetDifficulty) {
                 logger.info(`Block mined by miner ${miner.id}:`, newBlock);
                 if (await this.addBlock(newBlock)) {
                     await miner.reward(newBlock);
+                    await miner.broadcastMineSuccess(newBlock);
                     break;
                 };
             } else {
-                logger.info(`Block not mined by miner ${miner.id}:`, newBlock);
+                await miner.broadcastMineFail(`Mining block ${newBlock.block_height}...`);
             }
 
             nonce++;
@@ -212,7 +211,6 @@ class Blockchain {
 
     // Broadcast functionality
     broadcastNewBlock(block) {
-        logger.info('Broadcasting new Block:', block);
         this.wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({

@@ -1,7 +1,7 @@
-const { supabase } = require('../modules/supabase');
-const { logger } = require('../modules/logger');
+const { supabase } = require('./supabase');
+const { logger } = require('./logger');
 const WebSocket = require('ws');
-const { log } = require('console');
+const connectionsService = require('./connections');
 
 class Miner {
     constructor(ws, wss, id, blockchain) {
@@ -43,22 +43,6 @@ class Miner {
         } catch (error) {
             logger.error(`Unexpected error fetching miner data: ${error}`);
         }
-    }
-
-    broadcastStatus = async (message) => {
-        await this.initialize();
-        logger.info(`Miner ${this.id} - Broadcasting status update: ${message}`);
-        this.wss.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify({
-                    action: 'miner_status_update',
-                    data: {
-                        miner: this,
-                        message
-                    }
-                }));
-            }
-        });
     }
 
     async powerOn() {
@@ -159,6 +143,50 @@ class Miner {
         this.balance += newBlock.reward;
         this.broadcastStatus('Rewarded');
         return true
+    }
+
+    broadcastStatus = async (message) => {
+        await this.initialize();
+        logger.info(`Miner ${this.id} - Broadcasting status update: ${message}`);
+        connectionsService.getConnection(this.user_id).send(JSON.stringify({
+            action: 'miner_status_update',
+            data: {
+                miner: this,
+                message
+            }
+        }));
+    }
+
+    broadcastMiningStatus = async (data) => {
+        await this.initialize();
+        connectionsService.getConnection(this.user_id).send(JSON.stringify({
+            action: 'miner_mining_status',
+            data: {
+                miner: this,
+                nonce: data.nonce,
+            }
+        }));
+    }
+
+    broadcastMineSuccess = async (newBlock) => {
+        await this.initialize();
+        connectionsService.getConnection(this.user_id).send(JSON.stringify({
+            action: 'miner_mine_success',
+            data: {
+                miner: this,
+                newBlock
+            }
+        }));
+    }
+    broadcastMineFail = async (message) => {
+        await this.initialize();
+        connectionsService.getConnection(this.user_id).send(JSON.stringify({
+            action: 'miner_mine_fail',
+            data: {
+                miner: this,
+                message
+            }
+        }));
     }
 
     
