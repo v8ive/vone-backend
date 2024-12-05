@@ -52,6 +52,7 @@ wss.on('connection', (ws, req) => {
 
     logger.info('Client connected');
     const { user_id } = url.parse(req.url, true).query;
+    console.log(user_id);
 
     const blockchain = new Blockchain(wss);
 
