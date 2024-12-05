@@ -4,6 +4,7 @@ const { logger } = require('../modules/logger');
 const { hash: cryptoHash } = require("crypto");
 const WebSocket = require('ws');
 const { Miner } = require('./miner');
+const { log } = require("console");
 
 class Block {
     constructor(block_height, timestamp, transactions, previousHash, nonce, minerId) {
@@ -116,10 +117,12 @@ class Blockchain {
 
     isValidBlock(newBlock, previousBlock) {
         if (newBlock.index !== previousBlock.index + 1) {
+            logger.error(`Invalid block index : New Index - ${newBlock.index} || Previous Index - ${previousBlock.index}`);
             return false; // Incorrect index
         }
 
         if (newBlock.previousHash !== previousBlock.hash) {
+            logger.error(`Invalid previous hash : New Previous Hash - ${newBlock.previousHash} || Previous Hash - ${previousBlock.hash}`);
             return false; // Incorrect previous hash
         }
 
