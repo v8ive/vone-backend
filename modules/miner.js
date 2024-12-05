@@ -49,7 +49,8 @@ class Miner {
         }
     }
 
-    broadcastStatus = (message) => {
+    broadcastStatus = async (message) => {
+        await this.initialize();
         logger.info(`Miner ${this.id} - Broadcasting status update: ${message}`);
         this.wss.clients.forEach((client) => {
             logger.info(`Checking client: ${client}`);
