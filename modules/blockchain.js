@@ -111,7 +111,7 @@ class Blockchain {
     }
 
     calculateTargetHash(difficulty) {
-        const INCREMENT_FACTOR = 2;
+        const INCREMENT_FACTOR = 5;
         // Adjust this formula based on your desired difficulty level
         const highestHashValue = Math.pow(2, 256) - 1; // Maximum possible hash value
         return highestHashValue / (difficulty ** INCREMENT_FACTOR + 1);
