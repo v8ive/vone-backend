@@ -148,10 +148,7 @@ class Blockchain {
                     0,
                     new Date().getTime(),
                     [],
-                    {
-                        timestamp: new Date().getTime(),
-                        hash: '0',
-                    },
+                    '0',
                     nonce,
                     miner.id
                 );
@@ -160,7 +157,7 @@ class Blockchain {
                     this.getLastBlock().block_height + 1,
                     new Date().getTime(),
                     [],
-                    this.getLastBlock(),
+                    this.getLastBlock().hash,
                     nonce,
                     miner.id
                 );

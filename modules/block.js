@@ -2,7 +2,7 @@ const { hash: cryptoHash } = require("crypto");
 const { supabase } = require("./supabase");
 
 class Block {
-    constructor(block_height, timestamp, transactions, previous_block, nonce, miner_id) {
+    constructor(block_height, timestamp, transactions, previous_hash, nonce, miner_id) {
         this.block_height = block_height;
         this.timestamp = timestamp;
         this.transactions = transactions;
