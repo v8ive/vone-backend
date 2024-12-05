@@ -40,17 +40,27 @@ class Block {
 class Blockchain {
     constructor(wss) {
         this.wss = wss; // WebSocket server
-        this.chain = supabase
-            .from('blocks')
-            .select('*')
-            .order('block_height', { ascending: true })
-            .then((data) => {
-                return data.data;
-            }).catch((error) => {
-                logger.error(error);
-            });
+        this.chain = [];
         this.difficulty = 2; // Adjust difficulty as needed
 
+    }
+
+    async initialize() {
+        try {
+            const { data, error } = await supabase
+                .from('blocks')
+                .select('*')
+                .order('block_height', { ascending: true });
+
+            if (error) {
+                logger.error(`Failed to fetch blockchain data: ${error.message}`);
+                return;
+            }
+
+            this.chain = data;
+        } catch (error) {
+            logger.error(`Unexpected error fetching blockchain data: ${error}`);
+        }
     }
 
     getLastBlock() {

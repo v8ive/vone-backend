@@ -41,6 +41,7 @@ wss.on('connection', (ws, require) => {
     const blockchain = new Blockchain(wss);
 
     ws.onmessage = async (message) => {
+        await blockchain.initialize();
         data = JSON.parse(message.data);
         const minerActions = {
             'miner_power_on': async (miner) => {
