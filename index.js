@@ -5,6 +5,7 @@ require('dotenv').config();
 const WebSocket = require('ws');
 const { createServer } = require('https');
 const url = require('url');
+const fs = require('fs');
 
 const { logger } = require('./modules/logger');
 
@@ -32,8 +33,8 @@ app.use('/auth', require('./routes/auth'));
 app.use('/health', healthCheckRoute);
 
 const options = {
-    key: process.env.SSL_KEY,
-    cert: process.env.SSL_CERT
+    key: fs.readFileSync(process.env.SSL_KEY),
+    cert: fs.readFileSync(process.env.SSL_CERT),
 };
 
 // Start the WebSocket server
