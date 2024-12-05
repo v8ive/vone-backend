@@ -118,6 +118,9 @@ class Blockchain {
     }
 
     isValidBlock(newBlock, previousBlock) {
+        if (!previousBlock) {
+            return true; // Genesis block
+        }
         if (newBlock.block_height !== previousBlock.block_height + 1) {
             logger.error(`Invalid block height : New Block Height - ${newBlock.block_height} || Previous Block Height - ${previousBlock.index}`);
             return false; // Incorrect Block Height
@@ -151,30 +154,43 @@ class Blockchain {
                 mining = false;
                 break;
             }
-            const fetchPendingTransactions = async () => {
-                const { data, error } = await supabase
-                    .from('transactions')
-                    .select('*')
-                    .eq('status', 'pending')
-                    .eq('block_id', this.getLastBlock().id)
-                    .order('timestamp', { ascending: true });
 
-                if (error) {
-                    logger.error('Error fetching pending transactions:' + error.message);
-                    return [];
-                }
+            let newBlock;
+            if (!this.getLastBlock()) {
+                newBlock = new Block(
+                    0,
+                    new Date().getTime(),
+                    [],
+                    '0',
+                    nonce,
+                    miner.id
+                );
+            } else {
+                const fetchPendingTransactions = async () => {
+                    const { data, error } = await supabase
+                        .from('transactions')
+                        .select('*')
+                        .eq('status', 'pending')
+                        .eq('block_id', this.getLastBlock().id)
+                        .order('timestamp', { ascending: true });
 
-                return data;
-            };
-            const transactions = await fetchPendingTransactions();
-            const newBlock = new Block(
-                this.getLastBlock().block_height + 1,
-                new Date().getTime(),
-                transactions,
-                this.getLastBlock().hash,
-                nonce,
-                miner.id
-            );
+                    if (error) {
+                        logger.error('Error fetching pending transactions:' + error.message);
+                        return [];
+                    }
+
+                    return data;
+                };
+                const transactions = await fetchPendingTransactions();
+                newBlock = new Block(
+                    this.getLastBlock().block_height + 1,
+                    new Date().getTime(),
+                    transactions,
+                    this.getLastBlock().hash,
+                    nonce,
+                    miner.id
+                );
+            }
             const targetDifficulty = this.calculateTargetHash(this.difficulty);
             const hashValue = parseInt(newBlock.hash, 16); // Convert hash to integer for comparison
             logger.info(`Target difficulty: ${targetDifficulty}`);
