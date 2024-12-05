@@ -63,7 +63,7 @@ class Blockchain {
                 .insert([{
                     timestamp: newBlock.timestamp,
                     hash: newBlock.hash,
-                    previous_hash: newBlock.previous_block.hash,
+                    previous_hash: newBlock.previous_hash,
                     nonce: newBlock.nonce,
                     transactions: transactions,
                     difficulty: this.difficulty,
@@ -94,7 +94,7 @@ class Blockchain {
         return highestHashValue / (difficulty ** INCREMENT_FACTOR + 1);
     }
 
-    isValidBlock(newBlock) {
+    async isValidBlock(newBlock) {
         const previousBlock = this.getLastBlock();
         if (!previousBlock) {
             return true; // Genesis block
@@ -104,14 +104,23 @@ class Blockchain {
             return false; // Incorrect Block Height
         }
 
-        if (newBlock.previous_block.hash !== previousBlock.hash) {
+        if (newBlock.previous_hash !== previousBlock.hash) {
             logger.error(`Invalid previous hash : New Previous Hash - ${newBlock.previous_hash} || Previous Hash - ${previousBlock.hash}`);
             return false; // Incorrect previous hash
         }
 
-        // You can add further checks like:
-        // - Valid block data format
-        // - Valid timestamp (within acceptable range)
+        const { data, error } = await supabase
+            .from('blocks')
+            .select('hash')
+            .eq('hash', newBlock.hash);
+        if (error) {
+            logger.error('Error fetching block:', error.message);
+            return false;
+        }
+        if (data.length > 0) {
+            logger.error('Block already exists');
+            return false; // Block hash already exists
+        }
 
         return true;
     }
