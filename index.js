@@ -111,7 +111,7 @@ wss.on('connection', (ws, require) => {
         if (minerAction) {
             const miner = new Miner(ws, wss, data.minerId, blockchain);
             await miner.initialize();
-            minerAction(miner);
+            await minerAction(miner);
 
         }
     };
