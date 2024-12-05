@@ -3,20 +3,19 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 const WebSocket = require('ws');
-const { createServer } = require('https');
+const { createServer: createHttpsServer } = require('https');
+const { createServer: createHttpServer } = require('http');
 const url = require('url');
 const { readFileSync } = require('fs');
-
 const { logger } = require('./modules/logger');
-
 const healthCheckRoute = require('./routes/healthCheck');
-
 const multer = require('multer');  // For handling file uploads
 const { Blockchain } = require('./modules/blockchain');
 const Miner = require('./modules/miner');
 
 const app = express();
 const port = process.env.PORT || 3000;
+const DEV = true;
 
 // Middleware
 app.use(cors());
@@ -32,12 +31,18 @@ app.use(multer().single('file'));
 app.use('/auth', require('./routes/auth'));
 app.use('/health', healthCheckRoute);
 
-// Start the WebSocket server
-const server = createServer({
-    key: readFileSync(process.env.SSL_KEY),
-    cert: readFileSync(process.env.SSL_CERT),
-});
+let server;
+if (DEV) {
+    // Start the WebSocket server
+    server = createHttpServer();
+} else {
+    server = createHttpsServer({
+        key: readFileSync(process.env.SSL_KEY),
+        cert: readFileSync(process.env.SSL_CERT),
+    });
+}
 const wss = new WebSocket.Server({ server });
+
 
 const connections = [];
 const users = [];
