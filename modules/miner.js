@@ -111,6 +111,7 @@ class Miner {
         }
 
         this.status = 'mining';
+        this.mining = true;
         this.broadcastStatus('Started Mining');
         await this.blockchain.mineBlock(this);
         return true
@@ -130,6 +131,7 @@ class Miner {
         }
 
         this.status = 'online';
+        this.mining = false;
         this.broadcastStatus('Stopped Mining');
         return true
     }

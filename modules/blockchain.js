@@ -128,7 +128,6 @@ class Blockchain {
 
     async mineBlock(miner) {
         await this.initialize();
-        logger.info(`Mining block for miner ${miner.id}`);
         let nonce = 0;
         let mining = true;
         const targetDifficulty = this.difficulty * miner.hash_rate;
