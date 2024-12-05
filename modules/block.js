@@ -1,5 +1,6 @@
 const { hash: cryptoHash } = require("crypto");
 const { supabase } = require("./supabase");
+const { logger } = require("./logger");
 
 class Block {
     constructor(block_height, timestamp, transactions, previous_hash, nonce, miner_id) {
@@ -46,6 +47,7 @@ class Block {
             const difficultyWeight = 0.5;
 
             const reward = (10 / blockTime) * timeWeight + (10 / this.nonce) * difficultyWeight;
+            logger.info(`Block reward calculated: ${reward}`);
 
             return reward;
         } else {
