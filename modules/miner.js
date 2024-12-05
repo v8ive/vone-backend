@@ -1,4 +1,3 @@
-const { useRef } = require('react');
 const { throttle } = require('lodash');
 const { supabase } = require('./supabase');
 const { logger } = require('./logger');
@@ -160,7 +159,7 @@ class Miner {
 
     broadcastMineSuccess = async (newBlock) => {
         await this.initialize();
-        const broadcastThrottle = useRef(throttle(() => {
+        const broadcastThrottle = throttle(() => {
             connectionsService.getConnection(this.user_id).send(JSON.stringify({
                 action: 'miner_mine_success',
                 data: {
@@ -168,13 +167,13 @@ class Miner {
                     newBlock
                 }
             }));
-        }, 1000));
-        broadcastThrottle.current();
+        }, 1000);
+        broadcastThrottle();
     }
 
     broadcastMineFail = async (message) => {
         await this.initialize();
-        const broadcastThrottle = useRef(throttle(() => {
+        const broadcastThrottle = throttle(() => {
             connectionsService.getConnection(this.user_id).send(JSON.stringify({
                 action: 'miner_mine_fail',
                 data: {
@@ -182,8 +181,8 @@ class Miner {
                     message
                 }
             }));
-        }, 1000));
-        broadcastThrottle.current();
+        }, 1000);
+        broadcastThrottle();
     }
 
     
