@@ -7,11 +7,11 @@ const { Miner } = require('./miner');
 const { log } = require("console");
 
 class Block {
-    constructor(block_height, timestamp, transactions, previousHash, nonce, minerId) {
+    constructor(block_height, timestamp, transactions, previous_hash, nonce, minerId) {
         this.block_height = block_height;
         this.timestamp = timestamp;
         this.transactions = transactions;
-        this.previousHash = previousHash;
+        this.previous_hash = previous_hash;
         this.nonce = nonce;
         this.hash = this.calculateHash();
         this.minerId = minerId;
@@ -23,7 +23,7 @@ class Block {
             block_height: this.block_height,
             timestamp: this.timestamp,
             transactions: this.transactions,
-            previousHash: this.previousHash,
+            previous_hash: this.previous_hash,
             nonce: this.nonce
         });
 
@@ -85,7 +85,7 @@ class Blockchain {
                 .from('blocks')
                 .insert([{
                     timestamp: newBlock.timestamp,
-                    previous_hash: newBlock.previousHash,
+                    previous_hash: newBlock.previous_hash,
                     nonce: newBlock.nonce,
                     transactions: newBlock.transactions,
                     difficulty: this.difficulty,
@@ -122,8 +122,8 @@ class Blockchain {
             return false; // Incorrect Block Height
         }
 
-        if (newBlock.previousHash !== previousBlock.hash) {
-            logger.error(`Invalid previous hash : New Previous Hash - ${newBlock.previousHash} || Previous Hash - ${previousBlock.hash}`);
+        if (newBlock.previous_hash !== previousBlock.hash) {
+            logger.error(`Invalid previous hash : New Previous Hash - ${newBlock.previous_hash} || Previous Hash - ${previousBlock.hash}`);
             return false; // Incorrect previous hash
         }
 
