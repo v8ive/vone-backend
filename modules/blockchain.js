@@ -134,10 +134,8 @@ class Blockchain {
         await this.initialize();
         let mining = true;
         let nonce = 0;
-        const targetDifficulty = this.calculateTargetHash(this.difficulty);
-
+        
         do {
-            logger.info(`Miner ${miner.id} mining block with difficulty ${targetDifficulty.toString()}...` + nonce.toString());
             const miningStatus = await supabase
                 .from('miners')
                 .select('mining')
@@ -175,7 +173,7 @@ class Blockchain {
             const targetDifficulty = this.calculateTargetHash(this.difficulty);
             const hashValue = parseInt(newBlock.hash, 16); // Convert hash to integer for comparison
             logger.info(`Target difficulty: ${targetDifficulty}`);
-            logger.info(`Hash value: ${hashValue}`);
+            logger.info(`Block Hash value: ${hashValue}`);
             if (hashValue < targetDifficulty) {
                 logger.info(`Block mined by miner ${miner.id}:`, newBlock);
                 if (await this.addBlock(newBlock)) {
