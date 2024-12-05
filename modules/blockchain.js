@@ -89,7 +89,7 @@ class Blockchain {
                     nonce: newBlock.nonce,
                     transactions: newBlock.transactions,
                     difficulty: this.difficulty,
-                    block_height: newBlock.index,
+                    block_height: newBlock.block_height,
                     miner_id: newBlock.minerId,
                 }])
                 .single();
