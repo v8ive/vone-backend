@@ -49,6 +49,7 @@ wss.on('connection', async (ws, req) => {
 
     logger.info('Client connected');
     const { user_id } = url.parse(req.url, true).query;
+    logger.info(`User ID: ${user_id}`); 
 
     if (!user_id) {
         logger.error('User ID is required');
