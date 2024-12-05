@@ -143,6 +143,24 @@ class Miner {
         return true
     }
 
+    async reward(newBlock) {
+        await this.initialize();
+        const { data, error } = await supabase
+            .from('miners')
+            .update({ balance: this.balance + newBlock.reward })
+            .eq('id', this.id);
+
+        if (error) {
+            logger.error('Failed to reward miner', error);
+            this.broadcastStatus('Failed to Reward');
+            return false;
+        }
+
+        this.balance += newBlock.reward;
+        this.broadcastStatus('Rewarded');
+        return true
+    }
+
     
 }
 

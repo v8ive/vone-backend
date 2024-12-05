@@ -74,7 +74,7 @@ class Blockchain {
 
         // Validate the new block
         if (!this.isValidBlock(newBlock, this.getLastBlock())) {
-            logger.error('Invalid block:', newBlock);
+            logger.error('Invalid block');
             return;
         }
 
@@ -119,10 +119,6 @@ class Blockchain {
 
         if (newBlock.previousHash !== previousBlock.hash) {
             return false; // Incorrect previous hash
-        }
-
-        if (!newBlock.hash.startsWith('0'.repeat(this.difficulty))) {
-            return false; // Does not meet proof-of-work difficulty
         }
 
         // You can add further checks like:
@@ -181,8 +177,9 @@ class Blockchain {
             logger.info(`Hash value: ${hashValue}`);
             if (hashValue < targetDifficulty) {
                 logger.info(`Block mined by miner ${miner.id}:`, newBlock);
-                this.addBlock(newBlock);
-                return newBlock;
+                await this.addBlock(newBlock);
+                await miner.reward(newBlock.reward);
+                break;
             } else {
                 logger.info(`Block not mined by miner ${miner.id}:`, newBlock);
             }
