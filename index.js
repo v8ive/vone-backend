@@ -15,7 +15,7 @@ const Miner = require('./modules/miner');
 
 const app = express();
 const port = process.env.PORT || 3000;
-const DEV = true;
+const DEV = false;
 
 // Middleware
 app.use(cors());
@@ -56,6 +56,46 @@ wss.on('connection', (ws, req) => {
 
     ws.onopen = async () => {
         await blockchain.initialize();
+        const { data, error: fetchError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('user_id', user_id)
+        
+        if (fetchError) {
+            logger.error(`Failed to fetch user data: ${error.message}`);
+            return;
+        }
+        
+        const { error: updateError } = await supabase
+            .from('users')
+            .update({ status: 'online' })
+            .eq('user_id', user_id);
+        
+        if (updateError) {
+            logger.error(`Failed to update user status: ${error.message}`);
+            return;
+        }
+
+        connections[user_id] = ws;
+        users[user_id] = {
+            username: data.username,
+            state: {
+                status: 'online',
+            }
+        }
+        const message = {
+            action: 'user_status_update',
+            data: {
+                user_id,
+                user: users[user_id],
+                message: 'connected'
+            }
+        }
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN && client !== ws) {
+                client.send(JSON.stringify(message));
+            }
+        });
     };
 
     ws.onmessage = async (message) => {
@@ -134,8 +174,35 @@ wss.on('connection', (ws, req) => {
         }
     };
 
-    ws.onclose = () => {
+    ws.onclose = async () => {
         logger.info('Client disconnected');
+
+        const user = users[user_id];
+        delete connections[user_id];
+        delete users[user_id];
+
+        const { error } = await supabase
+            .from('users')
+            .update({ status: 'offline' })
+            .eq('user_id', user_id);
+        
+        if (error) {
+            logger.error(`Failed to update user status: ${error.message}`);
+            return;
+        }
+        const message = {
+            action: 'user_status_update',
+            data: {
+                user_id,
+                user: users[user.user_id],
+                message: 'disconnected'
+            }
+        }
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN && client !== ws) {
+                client.send(JSON.stringify(message));
+            }
+        });
     };
 
 });
