@@ -42,59 +42,77 @@ wss.on('connection', (ws, require) => {
 
     ws.onmessage = async (message) => {
         data = JSON.parse(message.data);
-        if (data.action.includes('miner')) {
+        const minerActions = {
+            'miner_power_on': async (miner) => {
+                logger.info(`Powering on miner : ${data.minerId}`);
+
+                if (!miner) {
+                    logger.error('Miner not found');
+                    miner.broadcastStatus('Miner not found');
+                    return false;
+                }
+                if (miner.active) {
+                    logger.error('Miner is already powered on');
+                    miner.broadcastStatus('Miner is already powered on');
+                    return false;
+                }
+                return await miner.powerOn();
+            },
+            'miner_power_off': async (miner) => {
+                logger.info(`Powering off miner : ${data.minerId}`);
+                await miner.initialize();
+                if (!miner) {
+                    logger.error('Miner not found');
+                    miner.broadcastStatus('Miner not found');
+                    return false;
+                }
+                if (!miner.active) {
+                    logger.error('Miner is already powered off');
+                    miner.broadcastStatus('Miner is already powered off');
+                    return false;
+                }
+                return await miner.powerOff();
+            },
+            'miner_start': async (miner) => {
+                logger.info(`Miner Starting : ${data.minerId}`);
+                if (!miner) {
+                    logger.error('Miner not found');
+                    miner.broadcastStatus('Miner not found');
+                    return false;
+                }
+                if (!miner.active) {
+                    logger.error('Miner is not powered on');
+                    miner.broadcastStatus('Miner is not powered on');
+                    return false;
+                }
+                if (miner.mining) {
+                    logger.error('Miner is already mining');
+                    miner.broadcastStatus('Miner is already mining')
+                    return false;
+                }
+                return await miner.start();
+            },
+            'miner_stop': async (miner) => {
+                logger.info(`Miner Stopping : ${data.minerId}`);
+                if (!miner) {
+                    logger.error('Miner not found');
+                    miner.broadcastStatus('Miner not found');
+                    return false;
+                }
+                if (!miner.mining) {
+                    logger.error('Miner is not mining');
+                    miner.broadcastStatus('Miner is not mining');
+                    return false;
+                }
+                return await miner.stop();
+            },
+        }
+        const minerAction = minerActions[data.action];
+        if (minerAction) {
             const miner = new Miner(ws, wss, data.minerId, blockchain);
             await miner.initialize();
-        }
+            minerAction(miner);
 
-        if (data.action === 'miner_power_on') {
-            logger.info(`Powering on miner : ${data.minerId}`);
-            
-            if (!miner) {
-                logger.error('Miner not found');
-                miner.broadcastStatus('Miner not found');
-                return false;
-            }
-            if (miner.active) {
-                logger.error('Miner is already powered on');
-                miner.broadcastStatus('Miner is already powered on');
-                return false;
-            }
-            return await miner.powerOn();
-        }
-        if (data.action === 'miner_power_off') {
-            logger.info(`Powering off miner : ${data.minerId}`);
-            await miner.initialize();
-            if (!miner) {
-                logger.error('Miner not found');
-                miner.broadcastStatus('Miner not found');
-                return false;
-            }
-            if (!miner.active) {
-                logger.error('Miner is already powered off');
-                miner.broadcastStatus('Miner is already powered off');
-                return false;
-            }
-            return await miner.powerOff();
-        }
-        if (data.action === 'miner_start') {
-            logger.info(`Miner Starting : ${data.minerId}`);
-            if (!miner) {
-                logger.error('Miner not found');
-                miner.broadcastStatus('Miner not found');
-                return false;
-            }
-            if (!miner.active) {
-                logger.error('Miner is not powered on');
-                miner.broadcastStatus('Miner is not powered on');
-                return false;
-            }
-            if (miner.mining) {
-                logger.error('Miner is already mining');
-                miner.broadcastStatus('Miner is already mining')
-                return false;
-            }
-            return await miner.start();
         }
     };
 
