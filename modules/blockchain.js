@@ -161,7 +161,7 @@ class Blockchain {
             };
             const transactions = await fetchPendingTransactions();
             const newBlock = new Block(
-                this.getLastBlock().index + 1,
+                this.getLastBlock().block_height + 1,
                 new Date().getTime(),
                 transactions,
                 this.getLastBlock().hash,
