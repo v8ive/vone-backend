@@ -152,7 +152,7 @@ class Blockchain {
                     .order('timestamp', { ascending: true });
 
                 if (error) {
-                    logger.error('Error fetching pending transactions:', error.message);
+                    logger.error('Error fetching pending transactions:' + error.message);
                     return [];
                 }
 
