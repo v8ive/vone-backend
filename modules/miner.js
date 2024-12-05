@@ -3,6 +3,16 @@ const { supabase } = require('./supabase');
 const { logger } = require('./logger');
 const connectionsService = require('./connections');
 
+const broadcastThrottle = throttle((this, message) => {
+    connectionsService.getConnection(this.user_id).send(JSON.stringify({
+        action: 'miner_mine_fail',
+        data: {
+            miner: this,
+            message
+        }
+    }));
+}, 1000);
+
 class Miner {
     constructor(ws, wss, id, blockchain) {
         this.ws = ws;
@@ -167,22 +177,13 @@ class Miner {
                     newBlock
                 }
             }));
-        }, 50000);
+        }, 1000);
         broadcastThrottle();
     }
 
     broadcastMineFail = async (message) => {
         await this.initialize();
-        const broadcastThrottle = throttle(() => {
-            connectionsService.getConnection(this.user_id).send(JSON.stringify({
-                action: 'miner_mine_fail',
-                data: {
-                    miner: this,
-                    message
-                }
-            }));
-        }, 50000);
-        broadcastThrottle();
+        broadcastThrottle(this, message);
     }
 
     
