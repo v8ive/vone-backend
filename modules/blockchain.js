@@ -111,13 +111,14 @@ class Blockchain {
     }
 
     calculateTargetHash(difficulty) {
-        const INCREMENT_FACTOR = 5;
+        const INCREMENT_FACTOR = 10;
         // Adjust this formula based on your desired difficulty level
         const highestHashValue = Math.pow(2, 256) - 1; // Maximum possible hash value
         return highestHashValue / (difficulty ** INCREMENT_FACTOR + 1);
     }
 
-    isValidBlock(newBlock, previousBlock) {
+    isValidBlock(newBlock) {
+        const previousBlock = this.getLastBlock();
         if (!previousBlock) {
             return true; // Genesis block
         }
