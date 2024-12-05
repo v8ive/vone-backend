@@ -56,7 +56,7 @@ wss.on('connection', (ws, req) => {
     const blockchain = new Blockchain(wss);
 
     ws.onopen = async () => {
-        console.log(`${user_id} connected`);
+        console.log(`client connected`);
         await blockchain.initialize();
         const { data, error: fetchError } = await supabase
             .from('users')
