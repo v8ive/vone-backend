@@ -16,8 +16,6 @@ class Miner {
         this.mining = false;
         this.status = 'unknown';
         this.currency_code = null;
-
-        this.initialize();
         
     }
 
