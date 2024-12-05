@@ -87,7 +87,7 @@ class Blockchain {
                     timestamp: newBlock.timestamp,
                     previous_hash: newBlock.previousHash,
                     nonce: newBlock.nonce,
-                    transactions: JSON.stringify(newBlock.transactions),
+                    transactions: newBlock.transactions,
                     difficulty: this.difficulty,
                     block_height: newBlock.index,
                     miner_id: newBlock.minerId,
