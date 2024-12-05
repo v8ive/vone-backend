@@ -50,7 +50,7 @@ wss.on('connection', (ws, require) => {
                 logger.error('Miner not found');
                 return false;
             }
-            if (miner.isActive) {
+            if (miner.active) {
                 logger.error('Miner is already powered on');
                 return false;
             }
@@ -64,7 +64,7 @@ wss.on('connection', (ws, require) => {
                 logger.error('Miner not found');
                 return false;
             }
-            if (!miner.isActive) {
+            if (!miner.active) {
                 logger.error('Miner is already powered off');
                 return false;
             }
@@ -77,15 +77,15 @@ wss.on('connection', (ws, require) => {
                 logger.error('Miner not found');
                 return false;
             }
-            if (!miner.isActive) {
+            if (!miner.active) {
                 logger.error('Miner is not powered on');
                 return false;
             }
-            if (miner.isMining) {
+            if (miner.mining) {
                 logger.error('Miner is already mining');
                 return false;
             }
-            return await miner.mine();
+            return await miner.start();
         }
     };
 

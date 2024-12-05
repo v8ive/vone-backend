@@ -12,8 +12,8 @@ class Miner {
 
         this.user_id = null;
         this.hash_rate = null;
-        this.isActive = false;
-        this.isMining = false;
+        this.active = false;
+        this.mining = false;
         this.status = 'unknown';
         this.currency_code = null;
 
@@ -40,8 +40,8 @@ class Miner {
 
             this.user_id = data.user_id;
             this.hash_rate = data.hash_rate;
-            this.isActive = data.isActive;
-            this.isMining = data.mining; // Assuming "mining" property exists
+            this.active = data.active;
+            this.mining = data.mining; // Assuming "mining" property exists
             this.status = data.status;
             this.currency_code = data.currency_code;
         } catch (error) {
@@ -50,11 +50,10 @@ class Miner {
     }
 
     broadcastStatus = (message) => {
-        logger.info(`Broadcasting status update: ${message}`);
+        logger.info(`Miner ${this.id} - Broadcasting status update: ${message}`);
         this.wss.clients.forEach((client) => {
             logger.info(`Checking client: ${client}`);
             if (client.readyState === WebSocket.OPEN) {
-                logger.info(`Client Available, Sending message: ${message}`);
                 client.send(JSON.stringify({
                     action: 'miner_status_update',
                     data: {
@@ -70,7 +69,7 @@ class Miner {
         await this.initialize();
         const { data, error } = await supabase
             .from('miners')
-            .update({ isActive: true, status: 'online' })
+            .update({ active: true, status: 'online' })
             .eq('id', this.id);
 
         if (error) {
@@ -78,7 +77,7 @@ class Miner {
             return false;
         }
 
-        this.isActive = true;
+        this.active = true;
         this.status = 'online';
         this.broadcastStatus('Powered On');
         return true;
@@ -88,7 +87,7 @@ class Miner {
         await this.initialize();
         const { data, error } = await supabase
             .from('miners')
-            .update({ isActive: false, status: 'offline' })
+            .update({ active: false, status: 'offline' })
             .eq('id', this.id);
 
         if (error) {
@@ -96,13 +95,13 @@ class Miner {
             return false;
         }
 
-        this.isActive = false;
+        this.active = false;
         this.status = 'offline';
         this.broadcastStatus('Powered Off');
         return true
     }
 
-    async mine() {
+    async start() {
         await this.initialize();
         const { data, error } = await supabase
             .from('miners')
@@ -111,12 +110,30 @@ class Miner {
 
         if (error) {
             logger.error('Failed to start Mining', error);
-            return;
+            return false;
         }
 
         this.status = 'mining';
         this.broadcastStatus('Started Mining');
         await this.blockchain.mineBlock(this);
+        return true
+    }
+
+    async stop() {
+        await this.initialize();
+        const { data, error } = await supabase
+            .from('miners')
+            .update({ status: 'online' })
+            .eq('id', this.id);
+
+        if (error) {
+            logger.error('Failed to stop Mining', error);
+            return false;
+        }
+
+        this.status = 'online';
+        this.broadcastStatus('Stopped Mining');
+        return true
     }
 
     

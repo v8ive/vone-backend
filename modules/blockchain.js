@@ -6,27 +6,34 @@ const WebSocket = require('ws');
 const { Miner } = require('./miner');
 
 class Block {
-    constructor(index, timestamp, data, previousHash, nonce, minerId) {
-        this.index = index;
+    constructor(block_height, timestamp, transactions, previousHash, nonce, minerId) {
+        this.block_height = block_height;
         this.timestamp = timestamp;
-        this.data = data;
+        this.transactions = transactions;
         this.previousHash = previousHash;
         this.nonce = nonce;
         this.hash = this.calculateHash();
         this.minerId = minerId;
+        this.reward = this.transactions.length > 0 ? this.calculateReward() : 0;
     }
 
     calculateHash() {
         const data = JSON.stringify({
-            index: this.index,
+            block_height: this.block_height,
             timestamp: this.timestamp,
-            data: this.data,
+            transactions: this.transactions,
             previousHash: this.previousHash,
             nonce: this.nonce
         });
 
         const hash = cryptoHash('sha256', data, 'hex');
         return hash;
+    }
+
+    calculateReward() {
+        this.reward = this.transactions.forEach((transaction) => {
+            return reward + transaction.fee;
+        });
     }
 }
 
@@ -54,13 +61,6 @@ class Blockchain {
     }
 
     async addBlock(newBlock) {
-        if (!this.getLastBlock()) {
-            newBlock.previousHash = "0"; // Or any other suitable default value
-        } else {
-            newBlock.previousHash = this.getLastBlock().hash;
-        }
-
-        newBlock.hash = newBlock.calculateHash();
 
         // Validate the new block
         if (!this.isValidBlock(newBlock, this.getLastBlock())) {
@@ -76,7 +76,7 @@ class Blockchain {
                     timestamp: newBlock.timestamp,
                     previousHash: newBlock.previousHash,
                     nonce: newBlock.nonce,
-                    transactions: JSON.stringify(newBlock.data.transactions),
+                    transactions: JSON.stringify(newBlock.transactions),
                     difficulty: this.difficulty,
                     block_height: newBlock.index,
                     miner_id: newBlock.minerId,
@@ -119,16 +119,40 @@ class Blockchain {
     async mineBlock(miner) {
         logger.info(`Mining block for miner ${miner.id}`);
         let nonce = 0;
+        let mining = true;
         const targetDifficulty = this.difficulty * miner.hash_rate;
 
         do {
+            const miningStatus = await supabase
+                .from('miners')
+                .select('mining')
+                .eq('id', miner.id)
+                .single();
+            if (miningStatus.data.mining === false) {
+                logger.info(`Miner ${miner.id} stopped mining`);
+                mining = false;
+                break;
+            }
+            const fetchPendingTransactions = async () => {
+                const { data, error } = await supabase
+                    .from('transactions')
+                    .select('*')
+                    .eq('status', 'pending')
+                    .eq('block_id', this.getLastBlock().id)
+                    .order('timestamp', { ascending: true });
+
+                if (error) {
+                    logger.error('Error fetching pending transactions:', error.message);
+                    return [];
+                }
+
+                return data;
+            };
             const transactions = await fetchPendingTransactions();
             const newBlock = new Block(
                 this.getLastBlock().index + 1,
                 new Date().getTime(),
-                {
-                    transactions
-                },
+                transactions,
                 this.getLastBlock().hash,
                 nonce,
                 miner.id
@@ -143,7 +167,7 @@ class Blockchain {
             }
 
             nonce++;
-        } while (true);
+        } while (mining);
     }
 
     // Broadcast functionality
