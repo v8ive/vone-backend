@@ -133,6 +133,7 @@ class Blockchain {
         const targetDifficulty = this.difficulty * miner.hash_rate;
 
         do {
+            logger.info(`Miner ${miner.id} mining block...` + nonce.toString());
             const miningStatus = await supabase
                 .from('miners')
                 .select('mining')
@@ -173,7 +174,7 @@ class Blockchain {
                 this.addBlock(newBlock);
                 return newBlock;
             } else {
-                logger.debug(`Block not mined by miner ${miner.id}:`, newBlock);
+                logger.info(`Block not mined by miner ${miner.id}:`, newBlock);
             }
 
             nonce++;
