@@ -17,11 +17,7 @@ class Miner {
         this.status = 'unknown';
         this.currency_code = null;
 
-        // this.initialize().then(() => {
-        //     logger.info(`Initialized miner ${this.id}`);
-        // }).catch((error) => {
-        //     logger.error(`Failed to initialize miner ${this.id}: ${error}`);
-        // });
+        this.initialize();
         
     }
 
@@ -53,7 +49,6 @@ class Miner {
         await this.initialize();
         logger.info(`Miner ${this.id} - Broadcasting status update: ${message}`);
         this.wss.clients.forEach((client) => {
-            logger.info(`Checking client: ${client}`);
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({
                     action: 'miner_status_update',
