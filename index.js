@@ -3,7 +3,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 const WebSocket = require('ws');
-const { createServer } = require('http');
+const { createServer } = require('https');
+const url = require('url');
 
 const { logger } = require('./modules/logger');
 
@@ -30,13 +31,22 @@ app.use(multer().single('file'));
 app.use('/auth', require('./routes/auth'));
 app.use('/health', healthCheckRoute);
 
+const options = {
+    key: process.env.SSL_KEY,
+    cert: process.env.SSL_CERT
+};
+
 // Start the WebSocket server
-const server = createServer(app);
+const server = createServer(app, options);
 const wss = new WebSocket.Server({ server });
 
-wss.on('connection', (ws, require) => {
+const connections = [];
+const users = [];
+
+wss.on('connection', (ws, req) => {
 
     logger.info('Client connected');
+    const { user_id } = url.parse(req.url, true).query;
 
     const blockchain = new Blockchain(wss);
 
