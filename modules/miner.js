@@ -159,30 +159,24 @@ class Miner {
 
     broadcastMineSuccess = async (newBlock) => {
         await this.initialize();
-        const broadcastThrottle = throttle(() => {
-            return connectionsService.getConnection(this.user_id).send(JSON.stringify({
-                action: 'miner_mine_success',
-                data: {
-                    miner: this,
-                    newBlock
-                }
-            }));
-        }, 1000);
-        await broadcastThrottle();
+        connectionsService.getConnection(this.user_id).send(JSON.stringify({
+            action: 'miner_mine_success',
+            data: {
+                miner: this,
+                newBlock
+            }
+        }));
     }
 
     broadcastMineFail = async (message) => {
         await this.initialize();
-        const broadcastThrottle = throttle(() => {
-            return connectionsService.getConnection(this.user_id).send(JSON.stringify({
-                action: 'miner_mine_fail',
-                data: {
-                    miner: this,
-                    message
-                }
-            }));
-        }, 1000);
-        await broadcastThrottle();
+        connectionsService.getConnection(this.user_id).send(JSON.stringify({
+            action: 'miner_mine_fail',
+            data: {
+                miner: this,
+                message
+            }
+        }));
     }
 
     

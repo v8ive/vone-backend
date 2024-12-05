@@ -194,10 +194,7 @@ class Blockchain {
                     break;
                 };
             } else {
-                const broadcastThrottle = throttle(async () => {
-                    await miner.broadcastMineFail(`Block did not meet target difficulty: ${hashValue} >= ${targetDifficulty}`);
-                }, 1000);
-                await broadcastThrottle();
+                await miner.broadcastMineFail(`Block did not meet target difficulty: ${hashValue} >= ${targetDifficulty}`);
             }
 
             nonce++;
