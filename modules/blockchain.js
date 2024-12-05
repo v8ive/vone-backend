@@ -116,9 +116,9 @@ class Blockchain {
     }
 
     isValidBlock(newBlock, previousBlock) {
-        if (newBlock.index !== previousBlock.index + 1) {
-            logger.error(`Invalid block index : New Index - ${newBlock.index} || Previous Index - ${previousBlock.index}`);
-            return false; // Incorrect index
+        if (newBlock.block_height !== previousBlock.block_height + 1) {
+            logger.error(`Invalid block height : New Block Height - ${newBlock.block_height} || Previous Block Height - ${previousBlock.index}`);
+            return false; // Incorrect Block Height
         }
 
         if (newBlock.previousHash !== previousBlock.hash) {
