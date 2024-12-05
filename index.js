@@ -48,7 +48,7 @@ wss.on('connection', (ws, require) => {
         data = JSON.parse(message.data);
         const minerActions = {
             'miner_power_on': async (miner) => {
-                logger.info(`Powering on miner : ${data.minerId}`);
+                logger.info(`Powering on miner : ${data.miner_id}`);
 
                 if (!miner) {
                     logger.error('Miner not found');
@@ -63,7 +63,7 @@ wss.on('connection', (ws, require) => {
                 return await miner.powerOn();
             },
             'miner_power_off': async (miner) => {
-                logger.info(`Powering off miner : ${data.minerId}`);
+                logger.info(`Powering off miner : ${data.miner_id}`);
                 await miner.initialize();
                 if (!miner) {
                     logger.error('Miner not found');
@@ -78,7 +78,7 @@ wss.on('connection', (ws, require) => {
                 return await miner.powerOff();
             },
             'miner_start': async (miner) => {
-                logger.info(`Miner Starting : ${data.minerId}`);
+                logger.info(`Miner Starting : ${data.miner_id}`);
                 if (!miner) {
                     logger.error('Miner not found');
                     miner.broadcastStatus('Miner not found');
@@ -97,7 +97,7 @@ wss.on('connection', (ws, require) => {
                 return await miner.start();
             },
             'miner_stop': async (miner) => {
-                logger.info(`Miner Stopping : ${data.minerId}`);
+                logger.info(`Miner Stopping : ${data.miner_id}`);
                 if (!miner) {
                     logger.error('Miner not found');
                     miner.broadcastStatus('Miner not found');
@@ -113,7 +113,7 @@ wss.on('connection', (ws, require) => {
         }
         const minerAction = minerActions[data.action];
         if (minerAction) {
-            const miner = new Miner(ws, wss, data.minerId, blockchain);
+            const miner = new Miner(ws, wss, data.miner_id, blockchain);
             await miner.initialize();
             await minerAction(miner);
 

@@ -7,14 +7,14 @@ const { Miner } = require('./miner');
 const { log } = require("console");
 
 class Block {
-    constructor(block_height, timestamp, transactions, previous_hash, nonce, minerId) {
+    constructor(block_height, timestamp, transactions, previous_hash, nonce, miner_id) {
         this.block_height = block_height;
         this.timestamp = timestamp;
         this.transactions = transactions;
         this.previous_hash = previous_hash;
         this.nonce = nonce;
         this.hash = this.calculateHash();
-        this.minerId = minerId;
+        this.miner_id = miner_id;
         this.reward = this.transactions.length > 0 ? this.calculateReward() : 0;
     }
 
@@ -90,7 +90,7 @@ class Blockchain {
                     transactions: newBlock.transactions,
                     difficulty: this.difficulty,
                     block_height: newBlock.block_height,
-                    miner_id: newBlock.minerId,
+                    miner_id: newBlock.miner_id,
                 }])
                 .single();
             if (error) {
