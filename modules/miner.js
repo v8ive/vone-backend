@@ -82,7 +82,7 @@ class Miner {
         await this.initialize();
         const { data, error } = await supabase
             .from('miners')
-            .update({ active: false, status: 'offline' })
+            .update({ active: false, mining: false, status: 'offline' })
             .eq('id', this.id);
 
         if (error) {
@@ -92,6 +92,7 @@ class Miner {
         }
 
         this.active = false;
+        this.mining = false
         this.status = 'offline';
         this.broadcastStatus('Powered Off');
         return true
