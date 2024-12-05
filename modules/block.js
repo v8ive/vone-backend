@@ -1,11 +1,11 @@
 const { hash: cryptoHash } = require("crypto");
 
 class Block {
-    constructor(block_height, timestamp, transactions, previous_hash, nonce, miner_id) {
+    constructor(block_height, timestamp, transactions, previous_block, nonce, miner_id) {
         this.block_height = block_height;
         this.timestamp = timestamp;
         this.transactions = transactions;
-        this.previous_hash = previous_hash;
+        this.previous_block = previous_block;
         this.nonce = nonce;
         this.hash = this.calculateHash();
         this.miner_id = miner_id;
@@ -17,7 +17,7 @@ class Block {
             block_height: this.block_height,
             timestamp: this.timestamp,
             transactions: this.transactions,
-            previous_hash: this.previous_hash,
+            previous_hash: this.previous_block.hash,
             nonce: this.nonce
         });
 
@@ -27,7 +27,7 @@ class Block {
 
     calculateReward() {
         if (this.transactions.length === 0) {
-            const blockTime = this.timestamp - this.previousBlock.timestamp;
+            const blockTime = this.timestamp - this.previous_block.timestamp;
 
             // Adjust these weights based on your desired reward distribution
             const timeWeight = 0.5;

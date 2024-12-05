@@ -40,7 +40,7 @@ class Blockchain {
     async addBlock(newBlock) {
 
         // Validate the new block
-        if (!this.isValidBlock(newBlock, this.getLastBlock())) {
+        if (!this.isValidBlock(newBlock)) {
             logger.error('Invalid block');
             return false;
         }
@@ -63,7 +63,7 @@ class Blockchain {
                 .insert([{
                     timestamp: newBlock.timestamp,
                     hash: newBlock.hash,
-                    previous_hash: newBlock.previous_hash,
+                    previous_hash: newBlock.previous_block.hash,
                     nonce: newBlock.nonce,
                     transactions: transactions,
                     difficulty: this.difficulty,
@@ -104,7 +104,7 @@ class Blockchain {
             return false; // Incorrect Block Height
         }
 
-        if (newBlock.previous_hash !== previousBlock.hash) {
+        if (newBlock.previous_block.hash !== previousBlock.hash) {
             logger.error(`Invalid previous hash : New Previous Hash - ${newBlock.previous_hash} || Previous Hash - ${previousBlock.hash}`);
             return false; // Incorrect previous hash
         }
@@ -139,7 +139,10 @@ class Blockchain {
                     0,
                     new Date().getTime(),
                     [],
-                    '0',
+                    {
+                        timestamp: new Date().getTime(),
+                        hash: '0',
+                    },
                     nonce,
                     miner.id
                 );
@@ -148,7 +151,7 @@ class Blockchain {
                     this.getLastBlock().block_height + 1,
                     new Date().getTime(),
                     [],
-                    this.getLastBlock().hash,
+                    this.getLastBlock(),
                     nonce,
                     miner.id
                 );
