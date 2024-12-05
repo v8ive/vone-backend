@@ -1,40 +1,9 @@
 const { throttle } = require('lodash');
-const { supabase } = require('../modules/supabase');
-const { logger } = require('../modules/logger');
-const { hash: cryptoHash } = require("crypto");
 const WebSocket = require('ws');
 
-class Block {
-    constructor(block_height, timestamp, transactions, previous_hash, nonce, miner_id) {
-        this.block_height = block_height;
-        this.timestamp = timestamp;
-        this.transactions = transactions;
-        this.previous_hash = previous_hash;
-        this.nonce = nonce;
-        this.hash = this.calculateHash();
-        this.miner_id = miner_id;
-        this.reward = this.transactions.length > 0 ? this.calculateReward() : 0;
-    }
-
-    calculateHash() {
-        const data = JSON.stringify({
-            block_height: this.block_height,
-            timestamp: this.timestamp,
-            transactions: this.transactions,
-            previous_hash: this.previous_hash,
-            nonce: this.nonce
-        });
-
-        const hash = cryptoHash('sha256', data, 'hex');
-        return hash;
-    }
-
-    calculateReward() {
-        this.reward = this.transactions.forEach((transaction) => {
-            return reward + transaction.fee;
-        });
-    }
-}
+const { supabase } = require('./supabase');
+const { logger } = require('./logger');
+const Block = require('./block');
 
 class Blockchain {
     constructor(wss) {
@@ -214,7 +183,4 @@ class Blockchain {
     }
 }
 
-module.exports = {
-    Block,
-    Blockchain,
-};
+module.exports =  Blockchain;

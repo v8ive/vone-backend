@@ -100,11 +100,7 @@ class Miner {
         this.status = 'mining';
         this.mining = true;
         this.broadcastStatus('Started Mining');
-        const newBlock = await this.blockchain.mineBlock(this);
-        if (!newBlock) {
-            this.stop();
-            this.broadcastStatus('Mined Block');
-        }
+        await this.blockchain.mineBlock(this);
         return true
     }
 
@@ -129,9 +125,10 @@ class Miner {
 
     async reward(newBlock) {
         await this.initialize();
+        this.balance += newBlock.reward;
         const { data, error } = await supabase
             .from('miners')
-            .update({ balance: this.balance + newBlock.reward })
+            .update({ balance: this.balance })
             .eq('id', this.id);
 
         if (error) {
@@ -142,6 +139,7 @@ class Miner {
 
         this.balance += newBlock.reward;
         this.broadcastMineSuccess(newBlock);
+        this.stop();
         return true
     }
 
@@ -160,9 +158,10 @@ class Miner {
     broadcastMineSuccess = async (newBlock) => {
         await this.initialize();
         connectionsService.getConnection(this.user_id).send(JSON.stringify({
-            action: 'miner_mine_success',
+            action: 'miner_mine_update',
             data: {
                 miner: this,
+                status: 'success',
                 newBlock
             }
         }));
@@ -171,9 +170,10 @@ class Miner {
     broadcastMineFail = async (message) => {
         await this.initialize();
         connectionsService.getConnection(this.user_id).send(JSON.stringify({
-            action: 'miner_mine_fail',
+            action: 'miner_mine_update',
             data: {
                 miner: this,
+                status: 'fail',
                 message
             }
         }));
