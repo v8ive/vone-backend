@@ -44,7 +44,6 @@ if (DEV) {
 }
 const wss = new WebSocket.Server({ server });
 
-
 const connections = [];
 const users = [];
 
@@ -54,13 +53,12 @@ wss.on('connection', async (ws, req) => {
     const { user_id } = url.parse(req.url, true).query;
 
     const blockchain = new Blockchain(wss);
-
     await blockchain.initialize();
-    const { data, error: fetchError } = await supabase
+
+    const { userData, error: fetchError } = await supabase
         .from('users')
         .select('*')
         .eq('user_id', user_id)
-
     if (fetchError) {
         logger.error(`Failed to fetch user data: ${error.message}`);
         return;
@@ -70,7 +68,6 @@ wss.on('connection', async (ws, req) => {
         .from('users')
         .update({ status: 'online' })
         .eq('user_id', user_id);
-
     if (updateError) {
         logger.error(`Failed to update user status: ${error.message}`);
         return;
@@ -78,7 +75,7 @@ wss.on('connection', async (ws, req) => {
 
     connections[user_id] = ws;
     users[user_id] = {
-        username: data.username,
+        username: userData.username,
         state: {
             status: 'online',
         }
@@ -98,7 +95,7 @@ wss.on('connection', async (ws, req) => {
     });
 
     ws.onmessage = async (message) => {
-        data = JSON.parse(message.data);
+        const data = JSON.parse(message.data);
         const minerActions = {
             'miner_power_on': async (miner) => {
                 logger.info(`Powering on miner : ${data.miner_id}`);
