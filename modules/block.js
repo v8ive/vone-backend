@@ -10,7 +10,13 @@ class Block {
         this.nonce = nonce;
         this.hash = this.calculateHash();
         this.miner_id = miner_id;
-        this.reward = this.calculateReward();
+        this.reward = 0;
+
+        // Initialize reward asynchronously
+        this.calculateReward().then(reward => {
+            this.reward = reward;
+            // Handle the calculated reward here, e.g., log it, use it in further calculations
+        });
     }
 
     calculateHash() {
