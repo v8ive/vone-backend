@@ -116,7 +116,11 @@ class Miner {
         this.status = 'mining';
         this.mining = true;
         this.broadcastStatus('Started Mining');
-        await this.blockchain.mineBlock(this);
+        const newBlock = await this.blockchain.mineBlock(this);
+        if (!newBlock) {
+            this.stop();
+            this.broadcastStatus('Mined Block');
+        }
         return true
     }
 
