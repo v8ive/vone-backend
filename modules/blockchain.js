@@ -1,10 +1,8 @@
-const cryptoJS = require("crypto-js");
+const { throttle } = require('lodash');
 const { supabase } = require('../modules/supabase');
 const { logger } = require('../modules/logger');
 const { hash: cryptoHash } = require("crypto");
 const WebSocket = require('ws');
-const { Miner } = require('./miner');
-const { log } = require("console");
 
 class Block {
     constructor(block_height, timestamp, transactions, previous_hash, nonce, miner_id) {
@@ -81,6 +79,17 @@ class Blockchain {
 
         // Insert the new block into the database
         try {
+            const { data: transactions, error: fetchError } = await supabase
+                .from('transactions')
+                .select('*')
+                .eq('block_height', newBlock.block_height)
+                .eq('status', 'pending');
+            
+            if (fetchError) {
+                logger.error('Error fetching transactions:', fetchError.message);
+                return false;
+            }
+
             const { error } = await supabase
                 .from('blocks')
                 .insert([{
@@ -88,7 +97,7 @@ class Blockchain {
                     hash: newBlock.hash,
                     previous_hash: newBlock.previous_hash,
                     nonce: newBlock.nonce,
-                    transactions: newBlock.transactions,
+                    transactions: transactions,
                     difficulty: this.difficulty,
                     block_height: newBlock.block_height,
                     miner_id: newBlock.miner_id,
@@ -167,26 +176,10 @@ class Blockchain {
                     miner.id
                 );
             } else {
-                const fetchPendingTransactions = async () => {
-                    const { data, error } = await supabase
-                        .from('transactions')
-                        .select('*')
-                        .eq('status', 'pending')
-                        .eq('block_height', this.getLastBlock().block_height)
-                        .order('timestamp', { ascending: true });
-
-                    if (error) {
-                        logger.error('Error fetching pending transactions:' + error.message);
-                        return [];
-                    }
-
-                    return data;
-                };
-                const transactions = await fetchPendingTransactions();
                 newBlock = new Block(
                     this.getLastBlock().block_height + 1,
                     new Date().getTime(),
-                    transactions,
+                    [],
                     this.getLastBlock().hash,
                     nonce,
                     miner.id
@@ -198,11 +191,10 @@ class Blockchain {
                 logger.info(`Block mined by miner ${miner.id}:`, newBlock);
                 if (await this.addBlock(newBlock)) {
                     await miner.reward(newBlock);
-                    await miner.broadcastMineSuccess(newBlock);
                     break;
                 };
             } else {
-                await miner.broadcastMineFail(`Mining block ${newBlock.block_height}...`);
+                await miner.broadcastMineFail(`Block did not meet target difficulty: ${hashValue} >= ${targetDifficulty}`);
             }
 
             nonce++;

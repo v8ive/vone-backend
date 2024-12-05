@@ -1,6 +1,7 @@
+const { useRef } = require('react');
+const { throttle } = require('lodash');
 const { supabase } = require('./supabase');
 const { logger } = require('./logger');
-const WebSocket = require('ws');
 const connectionsService = require('./connections');
 
 class Miner {
@@ -136,12 +137,12 @@ class Miner {
 
         if (error) {
             logger.error('Failed to reward miner', error);
-            this.broadcastStatus('Failed to Reward');
+            this.broadcastMineFail('Failed to Reward Miner');
             return false;
         }
 
         this.balance += newBlock.reward;
-        this.broadcastStatus('Rewarded');
+        this.broadcastMineSuccess(newBlock);
         return true
     }
 
@@ -157,36 +158,32 @@ class Miner {
         }));
     }
 
-    broadcastMiningStatus = async (data) => {
-        await this.initialize();
-        connectionsService.getConnection(this.user_id).send(JSON.stringify({
-            action: 'miner_mining_status',
-            data: {
-                miner: this,
-                nonce: data.nonce,
-            }
-        }));
-    }
-
     broadcastMineSuccess = async (newBlock) => {
         await this.initialize();
-        connectionsService.getConnection(this.user_id).send(JSON.stringify({
-            action: 'miner_mine_success',
-            data: {
-                miner: this,
-                newBlock
-            }
-        }));
+        const broadcastThrottle = useRef(throttle(() => {
+            connectionsService.getConnection(this.user_id).send(JSON.stringify({
+                action: 'miner_mine_success',
+                data: {
+                    miner: this,
+                    newBlock
+                }
+            }));
+        }, 1000));
+        broadcastThrottle.current();
     }
+
     broadcastMineFail = async (message) => {
         await this.initialize();
-        connectionsService.getConnection(this.user_id).send(JSON.stringify({
-            action: 'miner_mine_fail',
-            data: {
-                miner: this,
-                message
-            }
-        }));
+        const broadcastThrottle = useRef(throttle(() => {
+            connectionsService.getConnection(this.user_id).send(JSON.stringify({
+                action: 'miner_mine_fail',
+                data: {
+                    miner: this,
+                    message
+                }
+            }));
+        }, 1000));
+        broadcastThrottle.current();
     }
 
     
