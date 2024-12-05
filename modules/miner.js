@@ -167,7 +167,7 @@ class Miner {
                     newBlock
                 }
             }));
-        }, 1000);
+        }, 5000);
         broadcastThrottle();
     }
 
@@ -181,7 +181,7 @@ class Miner {
                     message
                 }
             }));
-        }, 1000);
+        }, 5000);
         broadcastThrottle();
     }
 
