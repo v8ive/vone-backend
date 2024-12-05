@@ -74,6 +74,7 @@ class Miner {
 
         if (error) {
             logger.error('Failed to power on miner', error);
+            this.broadcastStatus('Failed to Power On');
             return false;
         }
 
@@ -92,6 +93,7 @@ class Miner {
 
         if (error) {
             logger.error('Failed to power off miner', error);
+            this.broadcastStatus('Failed to Power Off');
             return false;
         }
 
@@ -110,6 +112,7 @@ class Miner {
 
         if (error) {
             logger.error('Failed to start Mining', error);
+            this.broadcastStatus('Failed to Start Mining');
             return false;
         }
 
@@ -128,6 +131,7 @@ class Miner {
 
         if (error) {
             logger.error('Failed to stop Mining', error);
+            this.broadcastStatus('Failed to Stop Mining');
             return false;
         }
 
