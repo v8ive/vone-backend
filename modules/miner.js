@@ -39,7 +39,7 @@ class Miner {
             this.mining = data.mining; // Assuming "mining" property exists
             this.status = data.status;
             this.currency_code = data.currency_code;
-            this.balance = data.balance
+            this.balance = data.balance;
         } catch (error) {
             logger.error(`Unexpected error fetching miner data: ${error}`);
         }

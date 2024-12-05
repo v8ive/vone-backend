@@ -75,7 +75,7 @@ class Blockchain {
         // Validate the new block
         if (!this.isValidBlock(newBlock, this.getLastBlock())) {
             logger.error('Invalid block');
-            return;
+            return false;
         }
 
         // Insert the new block into the database
@@ -94,16 +94,18 @@ class Blockchain {
                 .single();
             if (error) {
                 logger.error('Error adding block to database:' + error.message);
-                return;
+                return false;
             }
             this.chain.push(newBlock);
             logger.info('New block added to database:', newBlock);
         } catch (error) {
             logger.error('Error adding block to database, block failed to be added:', error);
+            return false;
         }
 
         // Broadcast the new block
         this.broadcastNewBlock(newBlock);
+        return true;
     }
 
     calculateTargetHash(difficulty) {
@@ -177,9 +179,10 @@ class Blockchain {
             logger.info(`Hash value: ${hashValue}`);
             if (hashValue < targetDifficulty) {
                 logger.info(`Block mined by miner ${miner.id}:`, newBlock);
-                await this.addBlock(newBlock);
-                await miner.reward(newBlock.reward);
-                break;
+                if (await this.addBlock(newBlock)) {
+                    await miner.reward(newBlock);
+                    break;
+                };
             } else {
                 logger.info(`Block not mined by miner ${miner.id}:`, newBlock);
             }
