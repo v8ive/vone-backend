@@ -15,7 +15,7 @@ const Miner = require('./modules/miner');
 
 const app = express();
 const port = process.env.PORT || 3000;
-const DEV = false;
+const DEV = true;
 
 // Middleware
 app.use(cors());
