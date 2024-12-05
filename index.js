@@ -40,7 +40,7 @@ wss.on('connection', (ws, require) => {
 
     const blockchain = new Blockchain(wss);
 
-    ws.opopen = async () => {
+    ws.onopen = async () => {
         await blockchain.initialize();
     };
 
