@@ -101,7 +101,7 @@ class Miner {
         await this.initialize();
         const { data, error } = await supabase
             .from('miners')
-            .update({ status: 'mining' })
+            .update({ mining: true, status: 'mining' })
             .eq('id', this.id);
 
         if (error) {
