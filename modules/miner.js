@@ -1,4 +1,3 @@
-const { throttle } = require('lodash');
 const { supabase } = require('./supabase');
 const { logger } = require('./logger');
 const connectionsService = require('./connections');

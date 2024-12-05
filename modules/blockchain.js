@@ -1,4 +1,3 @@
-const { throttle } = require('lodash');
 const WebSocket = require('ws');
 
 const { supabase } = require('./supabase');
