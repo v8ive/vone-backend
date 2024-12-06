@@ -10,8 +10,6 @@ const { logger } = require('./modules/logger');
 const healthCheckRoute = require('./routes/healthCheck');
 const multer = require('multer');  // For handling file uploads
 const Blockchain = require('./modules/blockchain');
-const Miner = require('./modules/miner');
-const { supabase } = require('./modules/supabase');
 const StateService = require('./modules/stateService');
 const User = require('./modules/user');
 
