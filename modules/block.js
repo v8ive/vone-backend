@@ -35,7 +35,10 @@ class Block {
                 .eq('hash', this.previous_hash)
                 .single();
 
+            logger.info(`Previous block timestamp: ${previousBlock.timestamp}`);
+
             const blockTime = this.timestamp - previousBlock.timestamp;
+            logger.info(`Block time: ${blockTime}`);
 
             // Adjust these weights and constants based on your desired reward distribution
             const baseReward = 10; // Base reward for faster blocks
