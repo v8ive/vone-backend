@@ -83,7 +83,6 @@ wss.on('connection', async (socket, req) => {
             },
             'miner_power_off': async (miner) => {
                 logger.info(`Powering off miner : ${data.miner_id}`);
-                await miner.initialize();
                 if (!miner) {
                     logger.error('Miner not found');
                     miner.broadcastStatus('Miner not found');
