@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
 const bodyParser = require('body-parser');
 const WebSocket = require('ws');
 const { createServer: createHttpsServer } = require('https');
@@ -13,7 +14,6 @@ const Blockchain = require('./modules/blockchain');
 const StateService = require('./modules/stateService');
 const User = require('./modules/user');
 
-require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
