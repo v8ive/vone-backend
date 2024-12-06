@@ -2,12 +2,11 @@ const { hash: cryptoHash } = require("crypto");
 const { logger } = require("./logger");
 
 class Block {
-    constructor(id, blockchain, data) {
-        this.id = id;
+    constructor(blockchain, data) {
         this.blockchain = blockchain;
         
-        this.previous_block = data.previous_block;
-        this.block_height = data.previous_block ? data.previous_block.block_height + 1 : 0;
+        this.previous_block = data.previous_block ? data.previous_block : null;
+        this.height = data.previous_block ? data.previous_block.height + 1 : 0;
         this.timestamp = data.timestamp;
         this.transactions = data.transactions;
         this.previous_hash = data.previous_block ? data.previous_block.hash : '0';
@@ -19,7 +18,7 @@ class Block {
 
     calculateHash() {
         const data = JSON.stringify({
-            block_height: this.block_height,
+            height: this.height,
             timestamp: this.timestamp,
             transactions: this.transactions,
             previous_hash: this.previous_hash,

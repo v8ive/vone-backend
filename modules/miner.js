@@ -68,7 +68,7 @@ class Miner {
         this.status = 'mining';
         this.mining = true;
         this.broadcastStatus('Started Mining');
-        await this.blockchain.mineBlock(this);
+        await this.blockchain.mine(this);
         return true
     }
 

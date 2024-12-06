@@ -8,7 +8,7 @@ const Miner = require('./miner');
 class Blockchain {
     constructor(wss, stateService) {
         this.wss = wss;
-        this.stateService = stateService
+        this.stateService = stateService;
         this.chain = {};
         this.miners = {};
         this.initialized = false;
@@ -24,15 +24,14 @@ class Blockchain {
         const { data: blockData, error: blockError } = await supabase
             .from('blocks')
             .select('*')
-            .order('block_height', { ascending: true });
+            .order('height', { ascending: true });
         if (blockError) {
             logger.error(`Failed to fetch blockchain data: ${error.message}`);
             return null;
         }
         let previousBlock;
         blockData.forEach(block => {
-            this.chain[block.id] = new Block(
-                block.id,
+            this.chain[block.height] = new Block(
                 this,
                 {
                     timestamp: block.timestamp,
@@ -41,7 +40,7 @@ class Blockchain {
                     previous_block: previousBlock,
                     nonce: block.nonce,
                     transactions: block.transactions,
-                    block_height: block.block_height,
+                    height: block.height,
                     miner_id: block.miner_id,
                     reward: block.reward
                 }
@@ -76,10 +75,8 @@ class Blockchain {
     }
 
     getLastBlock() {
-        if (!this.chain || this.chain.length === 0) {
-            return null; // Return null if there's no previous block
-        }
-        return this.chain[this.chain.length - 1];
+        const blockKeys = Object.keys(this.chain);
+        return this.chain[blockKeys[blockKeys.length - 1]];
     }
 
     getMiner(miner_id) {
@@ -124,7 +121,7 @@ class Blockchain {
         const { data: transactions, error: fetchError } = await supabase
             .from('transactions')
             .select('*')
-            .eq('block_height', newBlock.block_height)
+            .eq('height', newBlock.height)
             .eq('status', 'pending');
 
         if (fetchError) {
@@ -143,7 +140,7 @@ class Blockchain {
                 nonce: newBlock.nonce,
                 transactions: transactions,
                 difficulty: this.difficulty,
-                block_height: newBlock.block_height,
+                height: newBlock.height,
                 miner_id: newBlock.miner_id,
                 reward: newBlock.reward
             }])
@@ -154,7 +151,7 @@ class Blockchain {
         }
 
         this.chain.push(newBlock);
-        logger.info(`Block ${newBlock.block_height} added`);
+        logger.info(`Block ${newBlock.height} added`);
 
         // Broadcast the new block
         this.broadcastNewBlock(newBlock);
@@ -173,8 +170,8 @@ class Blockchain {
         if (!previousBlock) {
             return true; // Genesis block
         }
-        if (newBlock.block_height !== previousBlock.block_height + 1) {
-            logger.error(`Invalid block height : New Block Height - ${newBlock.block_height} || Previous Block Height - ${previousBlock.index}`);
+        if (newBlock.height !== previousBlock.height + 1) {
+            logger.error(`Invalid block height : New Block Height - ${newBlock.height} || Previous Block Height - ${previousBlock.index}`);
             return false; // Incorrect Block Height
         }
 
@@ -199,40 +196,39 @@ class Blockchain {
         return true;
     }
 
-    async mineBlock(miner) {
-        let mining = true;
+    async mine(miner) {
+        let mining = true
         let nonce = 0;
 
         do {
-            const miningStatus = await supabase
-                .from('miners')
-                .select('mining')
-                .eq('id', miner.id)
-                .single();
-            if (miningStatus.data.mining === false) {
-                logger.info(`Miner ${miner.id} stopped mining`);
-                mining = false;
-                break;
-            }
+            mining = this.stateService.getState('miner', miner.id).mining;
 
             let newBlock;
             if (!this.getLastBlock()) {
                 newBlock = new Block(
-                    0,
-                    new Date().getTime(),
-                    [],
-                    '0',
-                    nonce,
-                    miner.id
+                    this,
+                    {
+                        timestamp: new Date().getTime(),
+                        transactions: [],
+                        previous_hash: '0',
+                        nonce: nonce,
+                        height: 0,
+                        miner_id: miner.id
+                    }
                 );
             } else {
                 const previousBlock = this.getLastBlock();
                 newBlock = new Block(
-                    previousBlock,
-                    new Date().getTime(),
-                    [],
-                    nonce,
-                    miner.id,
+                    this,
+                    {
+                        timestamp: new Date().getTime(),
+                        transactions: [],
+                        previous_hash: previousBlock.hash,
+                        nonce: nonce,
+                        previous_block: previousBlock,
+                        height: previousBlock.height + 1,
+                        miner_id: miner.id
+                    }
                 );
             }
             const targetDifficulty = this.calculateTargetHash(this.difficulty);
@@ -259,7 +255,7 @@ class Blockchain {
                 client.send(JSON.stringify({
                     action: 'new_block',
                     data: {
-                        block_height: block.block_height,
+                        height: block.height,
                         miner_id: block.miner_id,
                         reward: block.reward
                     }
