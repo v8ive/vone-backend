@@ -26,7 +26,7 @@ class Blockchain {
             .select('*')
             .order('height', { ascending: true });
         if (blockError) {
-            logger.error(`Failed to fetch blockchain data: ${error.message}`);
+            logger.error(`Failed to fetch blockchain data: ${blockError.message}`);
             return null;
         }
         let previousBlock;
