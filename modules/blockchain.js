@@ -200,7 +200,6 @@ class Blockchain {
     }
 
     async mineBlock(miner) {
-        await this.initialize();
         let mining = true;
         let nonce = 0;
 
