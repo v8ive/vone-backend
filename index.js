@@ -45,8 +45,8 @@ if (DEV) {
     });
 }
 const wss = new WebSocket.Server({ server });
-const blockchain = new Blockchain(wss);
 const stateService = new StateService(wss);
+const blockchain = new Blockchain(wss, stateService);
 
 wss.on('connection', async (socket, req) => {
     const { user_id } = url.parse(req.url, true).query;
@@ -59,7 +59,7 @@ wss.on('connection', async (socket, req) => {
 
     await blockchain.initialize();
     
-    const user = await (new User(user_id)).initialize();
+    const user = await (new User(user_id, blockchain)).initialize();
 
     stateService.addConnection(user, socket);
 
