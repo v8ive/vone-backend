@@ -17,7 +17,7 @@ const connectionsService = require('./modules/connections');
 
 const app = express();
 const port = process.env.PORT || 3000;
-const DEV = true;
+const DEV = false;
 
 // Middleware
 app.use(cors());
