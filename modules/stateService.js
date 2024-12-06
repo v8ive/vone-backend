@@ -1,3 +1,4 @@
+const WebSocket = require('ws');
 
 class StateService {
     constructor(wss) {
