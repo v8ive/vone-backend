@@ -125,7 +125,7 @@ class Miner {
         }
 
         this.balance += newBlock.reward;
-        this.broadcastMineUpdate('success', newBlock);
+        this.broadcastMineUpdate('block_mined', newBlock);
         this.stop();
         return true
     }
