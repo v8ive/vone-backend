@@ -146,7 +146,7 @@ class Blockchain {
             return false;
         }
 
-        this.chain.push(newBlock);
+        this.chain[newBlock.height] = newBlock;
         logger.info(`Block ${newBlock.height} added`);
 
         // Broadcast the new block
