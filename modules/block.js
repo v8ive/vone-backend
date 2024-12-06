@@ -12,12 +12,6 @@ class Block {
         this.hash = this.calculateHash();
         this.miner_id = miner_id;
         this.reward = 0;
-
-        // Initialize reward asynchronously
-        this.calculateReward().then(reward => {
-            this.reward = reward;
-            // Handle the calculated reward here, e.g., log it, use it in further calculations
-        });
     }
 
     calculateHash() {
@@ -49,7 +43,7 @@ class Block {
             const reward = (10 / blockTime) * timeWeight + (10 / this.nonce) * difficultyWeight;
             logger.info(`Block reward calculated: ${reward}`);
 
-            return reward;
+            return this.reward = reward;
         } else {
             return this.transactions.reduce((total, transaction, index, transactions) => total + transaction.fee, 0);
         }

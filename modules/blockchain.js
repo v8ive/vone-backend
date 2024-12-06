@@ -167,6 +167,7 @@ class Blockchain {
             if (hashValue < targetDifficulty) {
                 logger.info(`Block mined by miner ${miner.id}:`, newBlock);
                 if (await this.addBlock(newBlock)) {
+                    await newBlock.calculateReward();
                     await miner.reward(newBlock);
                     break;
                 };
