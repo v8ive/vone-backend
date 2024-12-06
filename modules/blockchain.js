@@ -38,49 +38,40 @@ class Blockchain {
     }
 
     async addBlock(newBlock) {
+        const { data: transactions, error: fetchError } = await supabase
+            .from('transactions')
+            .select('*')
+            .eq('block_height', newBlock.block_height)
+            .eq('status', 'pending');
 
-        // Validate the new block
-        if (!this.isValidBlock(newBlock)) {
-            logger.error('Invalid block');
+        if (fetchError) {
+            logger.error('Error fetching transactions:', fetchError.message);
             return false;
         }
 
-        // Insert the new block into the database
-        try {
-            const { data: transactions, error: fetchError } = await supabase
-                .from('transactions')
-                .select('*')
-                .eq('block_height', newBlock.block_height)
-                .eq('status', 'pending');
-            
-            if (fetchError) {
-                logger.error('Error fetching transactions:', fetchError.message);
-                return false;
-            }
+        const reward = await newBlock.calculateReward();
 
-            const { error } = await supabase
-                .from('blocks')
-                .insert([{
-                    timestamp: newBlock.timestamp,
-                    hash: newBlock.hash,
-                    previous_hash: newBlock.previous_hash,
-                    nonce: newBlock.nonce,
-                    transactions: transactions,
-                    difficulty: this.difficulty,
-                    block_height: newBlock.block_height,
-                    miner_id: newBlock.miner_id,
-                }])
-                .single();
-            if (error) {
-                logger.error('Error adding block to database:' + error.message);
-                return false;
-            }
-            this.chain.push(newBlock);
-            logger.info('New block added to database:', newBlock);
-        } catch (error) {
-            logger.error('Error adding block to database, block failed to be added:', error);
+        const { error } = await supabase
+            .from('blocks')
+            .insert([{
+                timestamp: newBlock.timestamp,
+                hash: newBlock.hash,
+                previous_hash: newBlock.previous_hash,
+                nonce: newBlock.nonce,
+                transactions: transactions,
+                difficulty: this.difficulty,
+                block_height: newBlock.block_height,
+                miner_id: newBlock.miner_id,
+                reward: newBlock.reward
+            }])
+            .single();
+        if (error) {
+            logger.error('Error adding Block to database:' + error.message);
             return false;
         }
+
+        this.chain.push(newBlock);
+        logger.info(`Block ${newBlock.block_height} added`);
 
         // Broadcast the new block
         this.broadcastNewBlock(newBlock);
@@ -111,7 +102,7 @@ class Blockchain {
 
         const { data, error } = await supabase
             .from('blocks')
-            .select('hash')
+            .select('*')
             .eq('hash', newBlock.hash);
         if (error) {
             logger.error('Error fetching block:', error.message);
@@ -129,7 +120,7 @@ class Blockchain {
         await this.initialize();
         let mining = true;
         let nonce = 0;
-        
+
         do {
             const miningStatus = await supabase
                 .from('miners')
@@ -166,11 +157,11 @@ class Blockchain {
             const hashValue = parseInt(newBlock.hash, 16); // Convert hash to integer for comparison
             if (hashValue < targetDifficulty) {
                 logger.info(`Block mined by miner ${miner.id}:`, newBlock);
-                if (await this.addBlock(newBlock)) {
-                    await newBlock.calculateReward();
+                if (await this.isValidBlock(newBlock)) {
+                    await this.addBlock(newBlock);
                     await miner.reward(newBlock);
                     break;
-                };
+                }
             } else {
                 await miner.broadcastMineFail(`Block did not meet target difficulty: ${hashValue} >= ${targetDifficulty}`);
             }
@@ -192,4 +183,4 @@ class Blockchain {
     }
 }
 
-module.exports =  Blockchain;
+module.exports = Blockchain;
