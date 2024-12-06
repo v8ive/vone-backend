@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-require('dotenv').config();
 const WebSocket = require('ws');
 const { createServer: createHttpsServer } = require('https');
 const { createServer: createHttpServer } = require('http');
@@ -13,7 +12,10 @@ const multer = require('multer');  // For handling file uploads
 const Blockchain = require('./modules/blockchain');
 const Miner = require('./modules/miner');
 const { supabase } = require('./modules/supabase');
-const connectionsService = require('./modules/connections');
+const StateService = require('./modules/stateService');
+const User = require('./modules/user');
+
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -35,7 +37,6 @@ app.use('/health', healthCheckRoute);
 
 let server;
 if (DEV) {
-    // Start the WebSocket server
     server = createHttpServer();
 } else {
     server = createHttpsServer({
@@ -44,56 +45,28 @@ if (DEV) {
     });
 }
 const wss = new WebSocket.Server({ server });
+const blockchain = new Blockchain(wss);
+const stateService = new StateService(wss);
 
-wss.on('connection', async (ws, req) => {
-
-    logger.info('Client connected');
+wss.on('connection', async (socket, req) => {
     const { user_id } = url.parse(req.url, true).query;
-
     if (!user_id) {
         logger.error('User ID is required');
-        ws.close();
+        socket.close();
         return;
     }
+    logger.info('Client connected');
 
-    const blockchain = new Blockchain(wss);
     await blockchain.initialize();
+    
+    const user = await (new User(user_id)).initialize();
 
-    const { data: userData, error: fetchError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('user_id', user_id)
-    if (fetchError) {
-        logger.error(`Failed to fetch user data: ${fetchError.message}`);
-        return;
-    }
+    stateService.addConnection(user, socket);
 
-    const { error: updateError } = await supabase
-        .from('users')
-        .update({ status: 'online' })
-        .eq('user_id', user_id);
-    if (updateError) {
-        logger.error(`Failed to update user status: ${updateError.message}`);
-        return;
-    }
-
-    connectionsService.addConnection(user_id, ws, userData);
-    const message = {
-        action: 'user_status_update',
-        data: {
-            user_id,
-            user: connectionsService.getUser(user_id),
-            message: 'connected'
-        }
-    }
-    wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN && client !== ws) {
-            client.send(JSON.stringify(message));
-        }
-    });
-
-    ws.onmessage = async (message) => {
+    socket.onmessage = async (message) => {
         const data = JSON.parse(message.data);
+
+        // Miner Message Handling
         const minerActions = {
             'miner_power_on': async (miner) => {
                 logger.info(`Powering on miner : ${data.miner_id}`);
@@ -161,41 +134,16 @@ wss.on('connection', async (ws, req) => {
         }
         const minerAction = minerActions[data.action];
         if (minerAction) {
-            const miner = new Miner(ws, wss, data.miner_id, blockchain);
-            await miner.initialize();
+            const miner = blockchain.getMiner(data.miner_id);
             await minerAction(miner);
-
         }
     };
 
-    ws.onclose = async () => {
+    socket.onclose = async () => {
         logger.info('Client disconnected');
 
-        const user = connectionsService.getUser(user_id);
-        connectionsService.removeConnection(user_id);
-
-        const { error } = await supabase
-            .from('users')
-            .update({ status: 'offline' })
-            .eq('user_id', user_id);
-        
-        if (error) {
-            logger.error(`Failed to update user status: ${error.message}`);
-            return;
-        }
-        const message = {
-            action: 'user_status_update',
-            data: {
-                user_id,
-                user,
-                message: 'disconnected'
-            }
-        }
-        wss.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN && client !== ws) {
-                client.send(JSON.stringify(message));
-            }
-        });
+        stateService.updateState(user_id, { status: 'offline' });
+        stateService.removeConnection(user);
     };
 
 });

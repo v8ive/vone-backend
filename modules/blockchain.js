@@ -3,31 +3,76 @@ const WebSocket = require('ws');
 const { supabase } = require('./supabase');
 const { logger } = require('./logger');
 const Block = require('./block');
+const Miner = require('./miner');
 
 class Blockchain {
-    constructor(wss) {
-        this.wss = wss; // WebSocket server
-        this.chain = [];
-        this.difficulty = 2; // Adjust difficulty as needed
-
+    constructor(wss, stateService) {
+        this.wss = wss;
+        this.stateService = stateService
+        this.chain = {};
+        this.miners = {};
+        this.initialized = false;
+        this.difficulty = 2;
     }
 
     async initialize() {
-        try {
-            const { data, error } = await supabase
-                .from('blocks')
-                .select('*')
-                .order('block_height', { ascending: true });
-
-            if (error) {
-                logger.error(`Failed to fetch blockchain data: ${error.message}`);
-                return;
-            }
-
-            this.chain = data;
-        } catch (error) {
-            logger.error(`Unexpected error fetching blockchain data: ${error}`);
+        if (this.initialized) {
+            return this;
         }
+
+        // Initialize Blocks
+        const { blockData, blockError } = await supabase
+            .from('blocks')
+            .select('*')
+            .order('block_height', { ascending: true });
+        if (blockError) {
+            logger.error(`Failed to fetch blockchain data: ${error.message}`);
+            return null;
+        }
+        let previousBlock;
+        blockData.forEach(block => {
+            this.chain[block.id] = new Block(
+                block.id,
+                this,
+                {
+                    timestamp: block.timestamp,
+                    hash: block.hash,
+                    previous_hash: block.previous_hash,
+                    previous_block: previousBlock,
+                    nonce: block.nonce,
+                    transactions: block.transactions,
+                    block_height: block.block_height,
+                    miner_id: block.miner_id,
+                    reward: block.reward
+                }
+            );
+        });
+
+        // Initialize Miners
+        const { minerData, minerError } = await supabase
+            .from('miners')
+            .select('*');
+        if (minerError) {
+            logger.error(`Failed to fetch miner data: ${minerError.message}`);
+            return null;
+        }
+        minerData.forEach(miner => {
+            this.miners[miner.id] = new Miner(
+                miner.id,
+                this,
+                {
+                    user_id: miner.user_id,
+                    hash_rate: miner.hash_rate,
+                    active: miner.active,
+                    mining: miner.mining,
+                    status: miner.status,
+                    currency_code: miner.currency_code,
+                    balance: miner.balance
+                });
+        });
+
+        this.initialized = true;
+        return this;
     }
 
     getLastBlock() {
@@ -35,6 +80,44 @@ class Blockchain {
             return null; // Return null if there's no previous block
         }
         return this.chain[this.chain.length - 1];
+    }
+
+    getMiner(miner_id) {
+        return this.miners[miner_id];
+    }
+
+    async addMiner(user_id) {
+        const { data: miner, error } = await supabase
+            .from('miners')
+            .insert([{
+                user_id: user_id,
+                hash_rate: 0,
+                active: false,
+                mining: false,
+                status: 'offline',
+                currency_code: 'Lux',
+                balance: 0
+            }])
+            .single();
+        if (error) {
+            logger.error('Error adding Miner to database:' + error.message);
+            return null;
+        }
+
+        this.miners[miner.id] = new Miner(
+            miner.id,
+            this,
+            {
+                user_id: miner.user_id,
+                hash_rate: miner.hash_rate,
+                active: miner.active,
+                mining: miner.mining,
+                status: miner.status,
+                currency_code: miner.currency_code,
+                balance: miner.balance
+            });
+
+        return this.miners[miner.id];
     }
 
     async addBlock(newBlock) {
@@ -154,7 +237,7 @@ class Blockchain {
                 );
             }
             const targetDifficulty = this.calculateTargetHash(this.difficulty);
-            const hashValue = parseInt(newBlock.hash, 16); // Convert hash to integer for comparison
+            const hashValue = parseInt(newBlock.hash, 16);
             if (hashValue < targetDifficulty) {
                 logger.info(`Block mined by miner ${miner.id}:`, newBlock);
                 if (await this.isValidBlock(newBlock)) {

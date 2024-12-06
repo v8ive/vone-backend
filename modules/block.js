@@ -1,18 +1,20 @@
 const { hash: cryptoHash } = require("crypto");
-const { supabase } = require("./supabase");
 const { logger } = require("./logger");
 
 class Block {
-    constructor(previous_block, timestamp, transactions, nonce, miner_id) {
-        this.previous_block = previous_block;
-        this.block_height = previous_block ? previous_block.block_height + 1 : 0;
-        this.timestamp = timestamp;
-        this.transactions = transactions;
-        this.previous_hash = previous_block ? previous_block.hash : '0';
-        this.nonce = nonce;
+    constructor(id, blockchain, data) {
+        this.id = id;
+        this.blockchain = blockchain;
+        
+        this.previous_block = data.previous_block;
+        this.block_height = data.previous_block ? data.previous_block.block_height + 1 : 0;
+        this.timestamp = data.timestamp;
+        this.transactions = data.transactions;
+        this.previous_hash = data.previous_block ? data.previous_block.hash : '0';
+        this.nonce = data.nonce;
         this.hash = this.calculateHash();
-        this.miner_id = miner_id;
-        this.reward = 0;
+        this.miner_id = data.miner_id;
+        this.reward = data.reward ? data.reward : 0;
     }
 
     calculateHash() {

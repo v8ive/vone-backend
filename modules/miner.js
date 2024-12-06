@@ -1,51 +1,22 @@
 const { supabase } = require('./supabase');
 const { logger } = require('./logger');
-const connectionsService = require('./connections');
 
 class Miner {
-    constructor(ws, wss, id, blockchain) {
-        this.ws = ws;
-        this.wss = wss;
-        this.blockchain = blockchain;
+    constructor(id, blockchain, data) {
         this.id = id;
+        this.blockchain = blockchain;
 
-        this.user_id = null;
-        this.hash_rate = null;
-        this.active = false;
-        this.mining = false;
-        this.status = 'unknown';
-        this.currency_code = null;
-        this.balance = 0;
+        this.user_id = data.user_id;
+        this.hash_rate = data.hash_rate;
+        this.active = data.active;
+        this.mining = data.mining;
+        this.status = data.status;
+        this.currency_code = data.currency_code;
+        this.balance = data.balance;
         
     }
 
-    async initialize() {
-        try {
-            const { data, error } = await supabase
-                .from('miners')
-                .select('*')
-                .eq('id', this.id)
-                .single();
-
-            if (error) {
-                logger.error(`Failed to fetch miner data: ${error.message}`);
-                return;
-            }
-
-            this.user_id = data.user_id;
-            this.hash_rate = data.hash_rate;
-            this.active = data.active;
-            this.mining = data.mining; // Assuming "mining" property exists
-            this.status = data.status;
-            this.currency_code = data.currency_code;
-            this.balance = data.balance;
-        } catch (error) {
-            logger.error(`Unexpected error fetching miner data: ${error}`);
-        }
-    }
-
     async powerOn() {
-        await this.initialize();
         const { data, error } = await supabase
             .from('miners')
             .update({ active: true, status: 'online' })
@@ -64,7 +35,6 @@ class Miner {
     }
     
     async powerOff() {
-        await this.initialize();
         const { data, error } = await supabase
             .from('miners')
             .update({ active: false, mining: false, status: 'offline' })
@@ -84,7 +54,6 @@ class Miner {
     }
 
     async start() {
-        await this.initialize();
         const { data, error } = await supabase
             .from('miners')
             .update({ mining: true, status: 'mining' })
@@ -104,7 +73,6 @@ class Miner {
     }
 
     async stop() {
-        await this.initialize();
         const { data, error } = await supabase
             .from('miners')
             .update({ mining: false, status: 'online' })
@@ -123,7 +91,6 @@ class Miner {
     }
 
     async reward(newBlock) {
-        await this.initialize();
         this.balance += newBlock.reward;
         const { data, error } = await supabase
             .from('miners')
@@ -143,9 +110,8 @@ class Miner {
     }
 
     broadcastStatus = async (message) => {
-        await this.initialize();
         logger.info(`Miner ${this.id} - Broadcasting status update: ${message}`);
-        connectionsService.getConnection(this.user_id).send(JSON.stringify({
+        this.blockchain.stateService.getConnection(this.user_id).send(JSON.stringify({
             action: 'miner_status_update',
             data: {
                 miner: this,
@@ -155,8 +121,7 @@ class Miner {
     }
 
     broadcastMineSuccess = async (newBlock) => {
-        await this.initialize();
-        connectionsService.getConnection(this.user_id).send(JSON.stringify({
+        this.blockchain.stateService.getConnection(this.user_id).send(JSON.stringify({
             action: 'miner_mine_update',
             data: {
                 miner: this,
@@ -167,8 +132,7 @@ class Miner {
     }
 
     broadcastMineFail = async (message) => {
-        await this.initialize();
-        connectionsService.getConnection(this.user_id).send(JSON.stringify({
+        this.blockchain.stateService.getConnection(this.user_id).send(JSON.stringify({
             action: 'miner_mine_update',
             data: {
                 miner: this,
