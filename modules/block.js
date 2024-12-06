@@ -3,11 +3,12 @@ const { supabase } = require("./supabase");
 const { logger } = require("./logger");
 
 class Block {
-    constructor(block_height, timestamp, transactions, previous_hash, nonce, miner_id) {
-        this.block_height = block_height;
+    constructor(previous_block, timestamp, transactions, nonce, miner_id) {
+        this.previous_block = previous_block;
+        this.block_height = previous_block ? previous_block.block_height + 1 : 0;
         this.timestamp = timestamp;
         this.transactions = transactions;
-        this.previous_hash = previous_hash;
+        this.previous_hash = previous_block ? previous_block.hash : '0';
         this.nonce = nonce;
         this.hash = this.calculateHash();
         this.miner_id = miner_id;
@@ -27,17 +28,16 @@ class Block {
         return hash;
     }
 
-    async calculateReward() {
+    async mine(miner) {
+        
+    }
+
+    calculateReward() {
         if (this.transactions.length === 0) {
-            const previousBlock = await supabase
-                .from('blocks')
-                .select('timestamp')
-                .eq('hash', this.previous_hash)
-                .single();
 
-            logger.info(`Previous block timestamp: ${previousBlock.timestamp}`);
+            logger.info(`Previous block timestamp: ${this.previous_block.timestamp}`);
 
-            const blockTime = this.timestamp - previousBlock.timestamp;
+            const blockTime = this.timestamp - this.previous_block.timestamp;
             logger.info(`Block time: ${blockTime}`);
 
             // Adjust these weights and constants based on your desired reward distribution

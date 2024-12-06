@@ -144,13 +144,13 @@ class Blockchain {
                     miner.id
                 );
             } else {
+                const previousBlock = this.getLastBlock();
                 newBlock = new Block(
-                    this.getLastBlock().block_height + 1,
+                    previousBlock,
                     new Date().getTime(),
                     [],
-                    this.getLastBlock().hash,
                     nonce,
-                    miner.id
+                    miner.id,
                 );
             }
             const targetDifficulty = this.calculateTargetHash(this.difficulty);
