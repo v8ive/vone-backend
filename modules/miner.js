@@ -67,7 +67,7 @@ class Miner {
 
         this.status = 'mining';
         this.mining = true;
-        this.broadcastStatus('Started Mining');
+        this.broadcastStatus('Mining Started');
         await this.blockchain.mine(this);
         return true
     }
@@ -86,7 +86,7 @@ class Miner {
 
         this.status = 'online';
         this.mining = false;
-        this.broadcastStatus('Stopped Mining');
+        this.broadcastStatus('Mining Stopped');
         return true
     }
 
@@ -104,7 +104,7 @@ class Miner {
         }
 
         this.balance += newBlock.reward;
-        this.broadcastMineSuccess(newBlock);
+        this.broadcastMineUpdate('success', newBlock);
         this.stop();
         return true
     }
@@ -128,33 +128,38 @@ class Miner {
     }
 
     broadcastStatus = async (message) => {
-        logger.info(`Miner ${this.id} - Broadcasting status update: ${message}`);
         this.blockchain.stateService.getConnection(this.user_id).send(JSON.stringify({
-            action: 'miner_status_update',
+            action: 'miner_state_update',
             data: {
                 miner_id: this.id,
+                state: {
+                    active: this.active,
+                    mining: this.mining,
+                    status: this.status,
+                    hash_rate: this.hash_rate,
+                    currency_code: this.currency_code,
+                    balance: this.balance
+                },
                 message
             }
         }));
     }
 
-    broadcastMineSuccess = async (newBlock) => {
+    broadcastMineUpdate = async (message, newBlock) => {
         this.blockchain.stateService.getConnection(this.user_id).send(JSON.stringify({
             action: 'miner_mine_update',
             data: {
                 miner_id: this.id,
-                status: 'success',
-                newBlock
-            }
-        }));
-    }
-
-    broadcastMineFail = async (message) => {
-        this.blockchain.stateService.getConnection(this.user_id).send(JSON.stringify({
-            action: 'miner_mine_update',
-            data: {
-                miner_id: this.id,
-                status: 'fail',
+                state: {
+                    active: this.active,
+                    mining: this.mining,
+                    status: this.status,
+                    hash_rate: this.hash_rate,
+                    currency_code: this.currency_code,
+                    balance: this.balance
+                },
+                block_height: newBlock ? newBlock.height : 0,
+                reward: newBlock ? newBlock.reward : 0,
                 message
             }
         }));

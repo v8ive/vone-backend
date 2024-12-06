@@ -241,7 +241,7 @@ class Blockchain {
                     break;
                 }
             } else {
-                await miner.broadcastMineFail(`Block did not meet target difficulty: ${hashValue} >= ${targetDifficulty}`);
+                await miner.broadcastMineUpdate(`fail`, null);
             }
 
             nonce++;
