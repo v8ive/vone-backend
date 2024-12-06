@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const { throttle } = require('lodash');
 
 const { supabase } = require('./supabase');
 const { logger } = require('./logger');
@@ -238,7 +239,8 @@ class Blockchain {
                 }
             } else {
                 logger.info(`Block mining failed by miner ${miner.id}`);
-                await miner.broadcastMineUpdate(`fail`, null);
+                const failThrottle = throttle(miner.broadcastMineUpdate, 1000);
+                await failThrottle(`fail`, null);
             }
 
             nonce++;
