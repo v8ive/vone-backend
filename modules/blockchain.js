@@ -237,6 +237,7 @@ class Blockchain {
                     break;
                 }
             } else {
+                logger.info(`Block mining failed by miner ${miner.id}`);
                 await miner.broadcastMineUpdate(`fail`, null);
             }
 
