@@ -30,6 +30,11 @@ class Miner {
 
         this.active = true;
         this.status = 'online';
+
+        this.blockchain.stateService.updateState('miner', this.id, {
+            active: this.active,
+            status: this.status
+        });
         this.broadcastPower('on');
         return true;
     }
@@ -49,6 +54,12 @@ class Miner {
         this.active = false;
         this.mining = false
         this.status = 'offline';
+
+        this.blockchain.stateService.updateState('miner', this.id, {
+            active: this.active,
+            mining: this.mining,
+            status: this.status
+        });
         this.broadcastPower('off');
         return true
     }
@@ -67,6 +78,11 @@ class Miner {
 
         this.status = 'mining';
         this.mining = true;
+
+        this.blockchain.stateService.updateState('miner', this.id, {
+            mining: this.mining,
+            status: this.status
+        });
         this.broadcastStatus('Mining Started');
         await this.blockchain.mine(this);
         return true
@@ -86,6 +102,11 @@ class Miner {
 
         this.status = 'online';
         this.mining = false;
+
+        this.blockchain.stateService.updateState('miner', this.id, {
+            mining: this.mining,
+            status: this.status
+        });
         this.broadcastStatus('Mining Stopped');
         return true
     }
