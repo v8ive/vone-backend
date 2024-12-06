@@ -10,7 +10,6 @@ class Blockchain {
         this.wss = wss;
         this.stateService = stateService;
         this.chain = {};
-        this.miners = {};
         this.initialized = false;
         this.difficulty = 2;
     }
@@ -56,18 +55,15 @@ class Blockchain {
             return null;
         }
         minerData.forEach(miner => {
-            this.miners[miner.id] = new Miner(
-                miner.id,
-                this,
-                {
-                    user_id: miner.user_id,
-                    hash_rate: miner.hash_rate,
-                    active: miner.active,
-                    mining: miner.mining,
-                    status: miner.status,
-                    currency_code: miner.currency_code,
-                    balance: miner.balance
-                });
+            this.stateService.addState('miner', miner.id, {
+                user_id: miner.user_id,
+                hash_rate: miner.hash_rate,
+                active: miner.active,
+                mining: miner.mining,
+                status: miner.status,
+                currency_code: miner.currency_code,
+                balance: miner.balance
+            });
         });
 
         this.initialized = true;
@@ -80,7 +76,11 @@ class Blockchain {
     }
 
     getMiner(miner_id) {
-        return this.miners[miner_id];
+        const minerState = this.stateService.getState('miner', miner_id);
+        if (!minerState) {
+            return null;
+        }
+        return new Miner(miner_id, this, minerState);
     }
 
     async addMiner(user_id) {
@@ -101,20 +101,16 @@ class Blockchain {
             return null;
         }
 
-        this.miners[miner.id] = new Miner(
-            miner.id,
-            this,
-            {
-                user_id: miner.user_id,
-                hash_rate: miner.hash_rate,
-                active: miner.active,
-                mining: miner.mining,
-                status: miner.status,
-                currency_code: miner.currency_code,
-                balance: miner.balance
-            });
-
-        return this.miners[miner.id];
+        this.stateService.addState('miner', miner.id, {
+            user_id: miner.user_id,
+            hash_rate: miner.hash_rate,
+            active: miner.active,
+            mining: miner.mining,
+            status: miner.status,
+            currency_code: miner.currency_code,
+            balance: miner.balance
+        });
+        
     }
 
     async addBlock(newBlock) {

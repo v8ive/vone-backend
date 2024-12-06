@@ -38,6 +38,15 @@ class StateService {
         return this.connections;
     }
 
+    addState(stateType, state_id, state) {
+        if (stateType === 'miner') {
+            this.minerStates[state_id] = {
+                ...state,
+                lastUpdated: new Date().getTime()
+            };
+        }
+    }
+
     getState(stateType, state_id) {
         if (stateType === 'miner') {
             return this.minerStates[state_id];
