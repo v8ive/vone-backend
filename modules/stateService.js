@@ -38,12 +38,12 @@ class StateService {
         return this.connections;
     }
 
-    getState(stateType, user_id) {
+    getState(stateType, state_id) {
         if (stateType === 'miner') {
-            return this.minerStates[user_id];
+            return this.minerStates[state_id];
         }
         if (stateType === 'user') {
-            return this.userStates[user_id];
+            return this.userStates[state_id];
         }
     }
 
@@ -58,21 +58,24 @@ class StateService {
     }
 
     updateState(stateType, state_id, state) {
+        let client;
         if (stateType === 'miner') {
             this.minerStates[state_id] = {
                 ...this.minerStates[state_id],
                 ...state,
                 lastUpdated: new Date().getTime()
             };
+            client = this.connections[this.minerStates[state_id].user_id];
         }
         if (stateType === 'user') {
-            this.userStates[user_id] = {
+            this.userStates[state_id] = {
                 ...this.userStates[state_id],
                 ...state,
                 lastUpdated: new Date().getTime()
             };
+            client = this.connections[state_id];
         }
-        this.broadcastStateUpdate(stateType, user_id);
+        this.broadcastStateUpdate(stateType, state_id, client);
     }
 
     broadcastConnection(user) {
@@ -102,23 +105,23 @@ class StateService {
         });
     }
 
-    broadcastStateUpdate(stateType, user) {
+    broadcastStateUpdate(stateType, state_id, thisClient) {
         if (stateType === 'miner') {
             this.wss.clients.forEach((client) => {
-                if (client.readyState === WebSocket.OPEN) {
+                if (client.readyState === WebSocket.OPEN && client === thisClient) {
                     client.send(JSON.stringify({
                         action: 'miner_state_update',
-                        data: this.minerStates[user.data.user_id]
+                        data: this.minerStates[state_id]
                     }));
                 }
             });
         }
         if (stateType === 'user') {
             this.wss.clients.forEach((client) => {
-                if (client.readyState === WebSocket.OPEN) {
+                if (client.readyState === WebSocket.OPEN && client !== thisClient) {
                     client.send(JSON.stringify({
                         action: 'user_state_update',
-                        data: this.userStates[user.data.user_id]
+                        data: this.userStates[state_id]
                     }));
                 }
             });
