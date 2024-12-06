@@ -259,7 +259,11 @@ class Blockchain {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({
                     action: 'new_block',
-                    data: block
+                    data: {
+                        block_height: block.block_height,
+                        miner_id: block.miner_id,
+                        reward: block.reward
+                    }
                 }));
             }
         });

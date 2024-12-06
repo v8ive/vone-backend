@@ -4,7 +4,8 @@ class StateService {
     constructor(wss) {
         this.wss = wss;
         this.connections = {};
-        this.states = {};
+        this.userStates = {};
+        this.minerStates = {};
     }
 
     addConnection(user, socket) {
@@ -37,22 +38,41 @@ class StateService {
         return this.connections;
     }
 
-    getState(user_id) {
-        return this.states[user_id];
+    getState(stateType, user_id) {
+        if (stateType === 'miner') {
+            return this.minerStates[user_id];
+        }
+        if (stateType === 'user') {
+            return this.userStates[user_id];
+        }
     }
 
-    getStates() {
-        return this.states;
+    getStates(stateType) {
+        if (stateType === 'miner') {
+            return this.minerStates;
+        }
+        if (stateType === 'user') {
+            return this.userStates
+        }
+        return null;
     }
 
-    updateState(user_id, state) {
-        const currentState = this.states[user_id];
-        this.states[user_id] = {
-            ...currentState,
-            ...state,
-            lastUpdated: new Date().getTime()
-        };
-        this.broadcastStateUpdate(user);
+    updateState(stateType, state_id, state) {
+        if (stateType === 'miner') {
+            this.minerStates[state_id] = {
+                ...this.minerStates[state_id],
+                ...state,
+                lastUpdated: new Date().getTime()
+            };
+        }
+        if (stateType === 'user') {
+            this.userStates[user_id] = {
+                ...this.userStates[state_id],
+                ...state,
+                lastUpdated: new Date().getTime()
+            };
+        }
+        this.broadcastStateUpdate(stateType, user_id);
     }
 
     broadcastConnection(user) {
@@ -82,19 +102,27 @@ class StateService {
         });
     }
 
-    broadcastStateUpdate(user) {
-        const socket = this.getConnection(user.data.user_id);
-        this.wss.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN && client !== socket) {
-                client.send(JSON.stringify({
-                    action: 'user_state_update',
-                    data: {
-                        user_id: user.data.user_id,
-                        state: this.getState(user.data.user_id),
-                    }
-                }));
-            }
-        });
+    broadcastStateUpdate(stateType, user) {
+        if (stateType === 'miner') {
+            this.wss.clients.forEach((client) => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({
+                        action: 'miner_state_update',
+                        data: this.minerStates[user.data.user_id]
+                    }));
+                }
+            });
+        }
+        if (stateType === 'user') {
+            this.wss.clients.forEach((client) => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({
+                        action: 'user_state_update',
+                        data: this.userStates[user.data.user_id]
+                    }));
+                }
+            });
+        }
     }
 
 }

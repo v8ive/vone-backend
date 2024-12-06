@@ -30,7 +30,7 @@ class Miner {
 
         this.active = true;
         this.status = 'online';
-        this.broadcastStatus('Powered On');
+        this.broadcastPower('on');
         return true;
     }
     
@@ -49,7 +49,7 @@ class Miner {
         this.active = false;
         this.mining = false
         this.status = 'offline';
-        this.broadcastStatus('Powered Off');
+        this.broadcastPower('off');
         return true
     }
 
@@ -109,12 +109,30 @@ class Miner {
         return true
     }
 
+    broadcastPower = async (message) => {
+        if ( message === 'on' ) {
+            this.blockchain.stateService.getConnection(this.user_id).send(JSON.stringify({
+                action: 'miner_power_on',
+                data: {
+                    miner_id: this.id
+                }
+            }));
+        } else if ( message === 'off' ) {
+            this.blockchain.stateService.getConnection(this.user_id).send(JSON.stringify({
+                action: 'miner_power_off',
+                data: {
+                    miner_id: this.id
+                }
+            }));
+        }
+    }
+
     broadcastStatus = async (message) => {
         logger.info(`Miner ${this.id} - Broadcasting status update: ${message}`);
         this.blockchain.stateService.getConnection(this.user_id).send(JSON.stringify({
             action: 'miner_status_update',
             data: {
-                miner: this,
+                miner_id: this.id,
                 message
             }
         }));
@@ -124,7 +142,7 @@ class Miner {
         this.blockchain.stateService.getConnection(this.user_id).send(JSON.stringify({
             action: 'miner_mine_update',
             data: {
-                miner: this,
+                miner_id: this.id,
                 status: 'success',
                 newBlock
             }
@@ -135,7 +153,7 @@ class Miner {
         this.blockchain.stateService.getConnection(this.user_id).send(JSON.stringify({
             action: 'miner_mine_update',
             data: {
-                miner: this,
+                miner_id: this.id,
                 status: 'fail',
                 message
             }
