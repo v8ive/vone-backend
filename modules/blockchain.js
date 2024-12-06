@@ -21,7 +21,7 @@ class Blockchain {
         }
 
         // Initialize Blocks
-        const { blockData, blockError } = await supabase
+        const { data: blockData, error: blockError } = await supabase
             .from('blocks')
             .select('*')
             .order('block_height', { ascending: true });
@@ -49,7 +49,7 @@ class Blockchain {
         });
 
         // Initialize Miners
-        const { minerData, minerError } = await supabase
+        const { data: minerData, error: minerError } = await supabase
             .from('miners')
             .select('*');
         if (minerError) {
