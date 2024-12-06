@@ -29,21 +29,25 @@ class Block {
 
     async calculateReward() {
         if (this.transactions.length === 0) {
-            const previous_block = await supabase   
+            const previousBlock = await supabase
                 .from('blocks')
                 .select('timestamp')
                 .eq('hash', this.previous_hash)
                 .single();
-            const blockTime = this.timestamp - previous_block.timestamp;
 
-            // Adjust these weights based on your desired reward distribution
-            const timeWeight = 0.5;
-            const difficultyWeight = 0.5;
+            const blockTime = this.timestamp - previousBlock.timestamp;
 
-            const reward = (10 / blockTime) * timeWeight + (10 / this.nonce) * difficultyWeight;
-            logger.info(`Block reward calculated: ${reward}`);
+            // Adjust these weights and constants based on your desired reward distribution
+            const baseReward = 10; // Base reward for faster blocks
+            const timePenaltyFactor = 0.1; // Penalty for slower blocks
 
-            return this.reward = reward;
+            const reward = baseReward - (blockTime * timePenaltyFactor);
+
+            // Ensure reward doesn't become negative
+            this.reward = Math.max(reward, 0);
+            logger.info(`Block reward calculated: ${this.reward}`);
+
+            return this.reward;
         } else {
             return this.transactions.reduce((total, transaction, index, transactions) => total + transaction.fee, 0);
         }
