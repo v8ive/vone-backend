@@ -72,8 +72,7 @@ class Blockchain {
     }
 
     getLastBlock() {
-        const blockKeys = Object.keys(this.chain);
-        return this.chain[blockKeys[blockKeys.length - 1]];
+        return Object.values(this.chain).reduce((prev, current) => (prev.height > current.height) ? prev : current);
     }
 
     getMiner(miner_id) {
@@ -202,7 +201,6 @@ class Blockchain {
 
             let newBlock;
             if (!this.getLastBlock()) {
-                console.log('Creating Genesis Block');
                 newBlock = new Block(
                     this,
                     {
