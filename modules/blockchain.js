@@ -121,7 +121,7 @@ class Blockchain {
             .eq('status', 'pending');
 
         if (fetchError) {
-            logger.error('Error fetching transactions:', fetchError.message);
+            logger.error('Error fetching transactions:' + fetchError.message);
             return false;
         }
 
@@ -181,7 +181,7 @@ class Blockchain {
             .select('*')
             .eq('hash', newBlock.hash);
         if (error) {
-            logger.error('Error fetching block:', error.message);
+            logger.error('Error fetching block:' + error.message);
             return false;
         }
         if (data.length > 0) {
@@ -230,7 +230,7 @@ class Blockchain {
             const targetDifficulty = this.calculateTargetHash(this.difficulty);
             const hashValue = parseInt(newBlock.hash, 16);
             if (hashValue < targetDifficulty) {
-                logger.info(`Block mined by miner ${miner.id}:`, newBlock);
+                logger.info(`Block mined by miner ${miner.id}`);
                 if (await this.isValidBlock(newBlock)) {
                     await this.addBlock(newBlock);
                     await miner.reward(newBlock);
