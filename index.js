@@ -140,7 +140,7 @@ wss.on('connection', async (socket, req) => {
     socket.onclose = async () => {
         logger.info('Client disconnected');
 
-        stateService.updateState(user_id, { status: 'offline' });
+        stateService.updateState('user', user_id, { status: 'offline' });
         stateService.removeConnection(user);
     };
 

@@ -11,7 +11,7 @@ class StateService {
     addConnection(user, socket) {
         const user_id = user.data.user_id;
         this.connections[user_id] = socket;
-        this.states[user_id] = {
+        this.userStates[user_id] = {
             user_id: user.data.user_id,
             status: user.data.status,
             lastUpdated: new Date().getTime()
@@ -22,8 +22,8 @@ class StateService {
     removeConnection(user) {
         const user_id = user.data.user_id;
         delete this.connections[user_id];
-        this.states[user_id] = {
-            ...this.states[user_id],
+        this.userStates[user_id] = {
+            ...this.userStates[user_id],
             status: 'offline',
             lastUpdated: new Date().getTime()
         };

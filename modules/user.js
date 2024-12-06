@@ -42,7 +42,7 @@ class User {
             logger.error('Failed to update user status', error);
             return false;
         }
-        this.blockchain.stateService.updateState(this.id, { status });
+        this.blockchain.stateService.updateState('user', this.id, { status });
 
         this.data.status = status;
         return true;
