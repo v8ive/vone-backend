@@ -71,12 +71,12 @@ wss.on('connection', async (socket, req) => {
 
                 if (!miner) {
                     logger.error('Miner not found');
-                    miner.broadcastStatus('Miner not found');
+                    miner.broadcastState('Miner not found');
                     return false;
                 }
                 if (miner.active) {
                     logger.error('Miner is already powered on');
-                    miner.broadcastStatus('Miner is already powered on');
+                    miner.broadcastState('Miner is already powered on');
                     return false;
                 }
                 return await miner.powerOn();
@@ -85,12 +85,12 @@ wss.on('connection', async (socket, req) => {
                 logger.info(`Powering off miner : ${data.miner_id}`);
                 if (!miner) {
                     logger.error('Miner not found');
-                    miner.broadcastStatus('Miner not found');
+                    miner.broadcastState('Miner not found');
                     return false;
                 }
                 if (!miner.active) {
                     logger.error('Miner is already powered off');
-                    miner.broadcastStatus('Miner is already powered off');
+                    miner.broadcastState('Miner is already powered off');
                     return false;
                 }
                 return await miner.powerOff();
@@ -99,17 +99,17 @@ wss.on('connection', async (socket, req) => {
                 logger.info(`Miner Starting : ${data.miner_id}`);
                 if (!miner) {
                     logger.error('Miner not found');
-                    miner.broadcastStatus('Miner not found');
+                    miner.broadcastState('Miner not found');
                     return false;
                 }
                 if (!miner.active) {
                     logger.error('Miner is not powered on');
-                    miner.broadcastStatus('Miner is not powered on');
+                    miner.broadcastState('Miner is not powered on');
                     return false;
                 }
                 if (miner.mining) {
                     logger.error('Miner is already mining');
-                    miner.broadcastStatus('Miner is already mining')
+                    miner.broadcastState('Miner is already mining')
                     return false;
                 }
                 return await miner.start();
@@ -118,12 +118,12 @@ wss.on('connection', async (socket, req) => {
                 logger.info(`Miner Stopping : ${data.miner_id}`);
                 if (!miner) {
                     logger.error('Miner not found');
-                    miner.broadcastStatus('Miner not found');
+                    miner.broadcastState('Miner not found');
                     return false;
                 }
                 if (!miner.mining) {
                     logger.error('Miner is not mining');
-                    miner.broadcastStatus('Miner is not mining');
+                    miner.broadcastState('Miner is not mining');
                     return false;
                 }
                 return await miner.stop();

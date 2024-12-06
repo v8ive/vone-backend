@@ -138,7 +138,7 @@ class Blockchain {
                 difficulty: this.difficulty,
                 height: newBlock.height,
                 miner_id: newBlock.miner_id,
-                reward: newBlock.reward
+                reward: reward
             }])
             .single();
         if (error) {

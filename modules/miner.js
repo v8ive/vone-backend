@@ -24,7 +24,7 @@ class Miner {
 
         if (error) {
             logger.error('Failed to power on miner', error);
-            this.broadcastStatus('Failed to Power On');
+            this.broadcastState('Failed to Power On');
             return false;
         }
 
@@ -47,7 +47,7 @@ class Miner {
 
         if (error) {
             logger.error('Failed to power off miner', error);
-            this.broadcastStatus('Failed to Power Off');
+            this.broadcastState('Failed to Power Off');
             return false;
         }
 
@@ -72,7 +72,7 @@ class Miner {
 
         if (error) {
             logger.error('Failed to start Mining', error);
-            this.broadcastStatus('Failed to Start Mining');
+            this.broadcastState('Failed to Start Mining');
             return false;
         }
 
@@ -83,7 +83,7 @@ class Miner {
             mining: this.mining,
             status: this.status
         });
-        this.broadcastStatus('Mining Started');
+        this.broadcastState('Mining Started');
         await this.blockchain.mine(this);
         return true
     }
@@ -96,7 +96,7 @@ class Miner {
 
         if (error) {
             logger.error('Failed to stop Mining', error);
-            this.broadcastStatus('Failed to Stop Mining');
+            this.broadcastState('Failed to Stop Mining');
             return false;
         }
 
@@ -107,7 +107,7 @@ class Miner {
             mining: this.mining,
             status: this.status
         });
-        this.broadcastStatus('Mining Stopped');
+        this.broadcastState('Mining Stopped');
         return true
     }
 
@@ -125,6 +125,7 @@ class Miner {
         }
 
         this.balance += newBlock.reward;
+        logger.info(`Miner ${this.id} rewarded ${newBlock.reward} ${this.currency_code}`);
         this.broadcastMineUpdate('block_mined', newBlock);
         this.stop();
         return true
@@ -148,7 +149,7 @@ class Miner {
         }
     }
 
-    broadcastStatus = async (message) => {
+    broadcastState = async (message) => {
         this.blockchain.stateService.getConnection(this.user_id).send(JSON.stringify({
             action: 'miner_state_update',
             data: {
