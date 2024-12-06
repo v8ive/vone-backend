@@ -202,6 +202,7 @@ class Blockchain {
 
             let newBlock;
             if (!this.getLastBlock()) {
+                console.log('Creating Genesis Block');
                 newBlock = new Block(
                     this,
                     {
