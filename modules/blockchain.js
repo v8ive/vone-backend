@@ -117,7 +117,7 @@ class Blockchain {
         const { data: transactions, error: fetchError } = await supabase
             .from('transactions')
             .select('*')
-            .eq('height', newBlock.height)
+            .eq('block_height', newBlock.height)
             .eq('status', 'pending');
 
         if (fetchError) {
