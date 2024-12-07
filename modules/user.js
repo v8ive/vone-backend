@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const { v4: uuidv4 } = require('uuid');
 
 const supabase = require('./supabase');
 const { logger } = require('./logger');
@@ -6,7 +7,7 @@ const { logger } = require('./logger');
 class User {
     constructor(id, server, socket) {
         this.is_guest = false;
-        this.id = id;
+        this.id = id ? id : uuidv4();
         this.server = server;
         this.socket = socket;
 
