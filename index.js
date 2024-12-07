@@ -89,7 +89,13 @@ WebSocketServer.on('connection', async (socket, req) => {
         // Update user status to online
         user.updateStatus('online');
 
-        const data = JSON.parse(message.data);
+        try {
+            const data = JSON.parse(message.data);
+        } catch (error) {
+            logger.error(`Failed to parse incoming message: ${error}`);
+            logger.info(message.data)
+            return;
+        }
     };
 
     // Handle client disconnect
