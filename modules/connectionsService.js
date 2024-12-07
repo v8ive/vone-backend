@@ -10,7 +10,10 @@ class ConnectionsService {
         if (this.connections[user_id]) {
             this.connections[user_id].send(JSON.stringify({
                 action: 'error',
-                message: 'logged_in_elsewhere'
+                data: {
+                    type: 'logged_in_elsewhere',
+                    message: 'You have logged in elsewhere'
+                }
             })
             )
 
