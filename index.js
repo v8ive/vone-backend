@@ -29,7 +29,6 @@ app.use(bodyParser.raw());
 app.use(multer().single('file'));
 
 // Mount routes
-app.use('/auth', require('./routes/auth'));
 app.use('/health', healthCheckRoute);
 
 // Start server (HTTP for development or HTTPS for production)
