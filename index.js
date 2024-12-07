@@ -99,6 +99,10 @@ WebSocketServer.on('connection', async (socket, req) => {
         connectionsService.removeConnection(user);
     };
 
+    socket.addEventListener("error", (event) => {
+        logger.error(`WebSocket error: ${event.message}`);
+    });
+
 });
 
 server.listen(port, () => {

@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const { logger } = require('./logger');
 
 class ConnectionsService {
     constructor(wss) {
@@ -20,6 +21,8 @@ class ConnectionsService {
             this.connections[user_id].close();
         }
         this.connections[user_id] = socket;
+        logger.info(`Clients connected: ${Object.keys(this.connections).length}`);
+        logger.info(`Client connected: ${user_id}`);
     }
 
     removeConnection(user_id) {
