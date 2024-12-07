@@ -55,6 +55,7 @@ WebSocketServer.on('connection', async (socket, req) => {
     let user_id = query.user_id;
 
     const user = new User(user_id, WebSocketServer, socket);
+    logger.info(`Client ID : ${user.id}`)
 
     // If user is a guest, log connection as guest
     if (!user_id) {
