@@ -7,6 +7,15 @@ class ConnectionsService {
     }
 
     addConnection(user_id, socket) {
+        if (this.connections[user_id]) {
+            this.connections[user_id].send(JSON.stringify({
+                action: 'error',
+                message: 'logged_in_elsewhere'
+            })
+            )
+
+            this.connections[user_id].close();
+        }
         this.connections[user_id] = socket;
     }
 
