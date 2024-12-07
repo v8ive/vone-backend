@@ -8,6 +8,7 @@ const multer = require('multer');
 const { readFileSync } = require('fs');
 const { createServer: createHttpsServer } = require('https');
 const { createServer: createHttpServer } = require('http');
+const uuidv4 = require('uuid').v4;
 
 const { logger } = require('./modules/logger');
 const healthCheckRoute = require('./routes/healthCheck');
@@ -51,16 +52,29 @@ const connectionsService = new ConnectionsService(WebSocketServer);
 // Handle Client Connection
 WebSocketServer.on('connection', async (socket, req) => {
     // Parse user_id from query string & initialize user
-    const { user_id } = url.parse(req.url, true).query;
+    const query = url.parse(req.url, true).query;
+    let user_id = query.user_id;
+
+    // If user is a guest, log connection as guest
+    if (!user_id) {
+        logger.error(`Client connected as guest`);
+        user.is_guest = true;
+        user_id = uuidv4();
+    }
+
     const user = await (new User(user_id, WebSocketServer)).initialize();
 
-    // If no user (or user_id), close connection
+    // If no user, log connection failed & close socket
     if (!user) {
-        logger.error(`Client connection failed: ${user_id}`);
+        logger.error(`Client connection failed`);
         socket.close();
         return;
     }
-    logger.info(`Client connected: ${user_id}`);
+
+    // If user is not a guest, log connection as user
+    if (!user.is_guest) {
+        logger.info(`Client connected as ${user.state.username}`);
+    }
 
     // Add connection to state service
     connectionsService.addConnection(user, socket);

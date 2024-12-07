@@ -5,6 +5,7 @@ const { logger } = require('./logger');
 
 class User {
     constructor(id, server, socket) {
+        this.is_guest = false;
         this.id = id;
         this.server = server;
         this.socket = socket;
@@ -17,6 +18,11 @@ class User {
     }
 
     async initialize() {
+        // If user is a guest, skip initialization
+        if (this.is_guest) {
+            return this;
+        }
+
         // Fetch user data from database
         const { data, error } = await supabase
             .from('users')
@@ -39,6 +45,11 @@ class User {
     }
 
     async updateStatus(status) {
+        // If user is a guest, skip status update
+        if (this.is_guest) {
+            return false;
+        }
+
         let statusState;
 
         // If user is/was online, update last_online timestamp
@@ -73,6 +84,11 @@ class User {
     }
 
     onConnect() {
+        // If user is a guest, skip status update & broadcast
+        if (this.is_guest) {
+            return;
+        }
+
         // Update user status to online
         this.updateStatus('online');
 
@@ -89,6 +105,10 @@ class User {
     }
 
     onDisconnect() {
+        // If user is a guest, skip status update & broadcast
+        if (this.is_guest) {
+            return;
+        }
         // Update user status to offline
         this.updateStatus('offline');
 
