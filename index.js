@@ -77,7 +77,7 @@ WebSocketServer.on('connection', async (socket, req) => {
     }
 
     // Add connection to state service
-    connectionsService.addConnection(user, socket);
+    connectionsService.addConnection(user.state.user_id, socket);
 
     // Update user status to online & broadcast connection
     user.onConnect();
