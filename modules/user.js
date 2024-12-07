@@ -7,7 +7,7 @@ const { logger } = require('./logger');
 class User {
     constructor(id, server, socket) {
         this.is_guest = false;
-        this.id = id ? id : uuidv4();
+        this.id = id ? id : new uuidv4();
         this.server = server;
         this.socket = socket;
 

@@ -78,7 +78,7 @@ WebSocketServer.on('connection', async (socket, req) => {
     }
 
     // Add connection to state service
-    connectionsService.addConnection(user.state.user_id, socket);
+    connectionsService.addConnection(user.id, socket);
 
     // Update user status to online & broadcast connection
     user.onConnect();
@@ -97,7 +97,7 @@ WebSocketServer.on('connection', async (socket, req) => {
         user.onDisconnect();
         
         // Remove connection from state service
-        connectionsService.removeConnection(user);
+        connectionsService.removeConnection(user.id);
     };
 
     socket.addEventListener("error", (event) => {
