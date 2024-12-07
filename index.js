@@ -54,13 +54,16 @@ WebSocketServer.on('connection', async (socket, req) => {
     const query = url.parse(req.url, true).query;
     let user_id = query.user_id;
 
-    const user = await (new User(user_id, WebSocketServer)).initialize();
+    const user = new User(user_id, WebSocketServer, socket);
 
     // If user is a guest, log connection as guest
     if (!user_id) {
         logger.info(`Client connected as guest`);
         user.is_guest = true;
     }
+
+    // Initialize user
+    await user.initialize();
 
     // If no user, log connection failed & close socket
     if (!user) {
