@@ -89,13 +89,7 @@ WebSocketServer.on('connection', async (socket, req) => {
         // Update user status to online
         user.updateStatus('online');
 
-        try {
-            const data = JSON.parse(message.data);
-        } catch (error) {
-            logger.error(`Failed to parse incoming message: ${error}`);
-            logger.info(message.data)
-            return;
-        }
+        const data = JSON.parse(message.data);
 
         if (data.action === 'ping') {
             // Respond to ping
