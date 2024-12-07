@@ -1,3 +1,5 @@
+const WebSocket = require('ws');
+
 const supabase = require('./supabase');
 const { logger } = require('./logger');
 
