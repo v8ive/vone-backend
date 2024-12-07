@@ -54,6 +54,10 @@ WebSocketServer.on('connection', async (socket, req) => {
     const query = url.parse(req.url, true).query;
     let user_id = query.user_id;
 
+    // Detect if user is connecting from a mobile device
+    const userAgent = req.headers['user-agent'];
+    const isMobile = /Mobile|Android|iPhone|iPad|iPod/.test(userAgent);
+
     const user = new User(user_id, WebSocketServer, socket);
     logger.info(`Client ID : ${user.id}`)
 
@@ -65,10 +69,11 @@ WebSocketServer.on('connection', async (socket, req) => {
 
     // Initialize user
     await user.initialize();
+    user.is_mobile = isMobile
 
     // If no user, log connection failed & close socket
     if (!user) {
-        logger.error(`Client connection failed`);
+        logger.error(`User initialization failed, closing connection`);
         socket.close();
         return;
     }
@@ -92,6 +97,7 @@ WebSocketServer.on('connection', async (socket, req) => {
         const data = JSON.parse(message.data);
 
         if (data.action === 'ping') {
+            logger.info('ping received');
             // Respond to ping
             socket.send(JSON.stringify({
                 action: 'pong'

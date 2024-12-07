@@ -11,6 +11,7 @@ class User {
         this.server = server;
         this.socket = socket;
 
+        this.is_mobile = false;
         this.state = {
             // username: 'user123'
             // status: 'offline'
@@ -19,8 +20,12 @@ class User {
     }
 
     async initialize() {
-        // If user is a guest, skip initialization
+        // If user is a guest, initialize guest state
         if (this.is_guest) {
+            this.state = {
+                username: 'Guest-' + this.id.slice(0, 4),
+                status: 'online'
+            };
             return this;
         }
 
@@ -48,7 +53,7 @@ class User {
     async updateStatus(status) {
         // If user is a guest, skip status update
         if (this.is_guest) {
-            return false;
+            return true;
         }
 
         let statusState;
@@ -85,11 +90,6 @@ class User {
     }
 
     onConnect() {
-        // If user is a guest, skip status update & broadcast
-        if (this.is_guest) {
-            return;
-        }
-
         // Update user status to online
         this.updateStatus('online');
 
@@ -98,18 +98,18 @@ class User {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({
                     action: 'user_connected',
-                    user_id: this.id,
-                    user_state: this.state
+                    data: {
+                        user_id: this.id,
+                        user_state: this.state,
+                        is_guest: this.is_guest
+                    }
+
                 }));
             }
         });
     }
 
     onDisconnect() {
-        // If user is a guest, skip status update & broadcast
-        if (this.is_guest) {
-            return;
-        }
         // Update user status to offline
         this.updateStatus('offline');
 
@@ -118,8 +118,11 @@ class User {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({
                     action: 'user_disconnected',
-                    user_id: this.id,
-                    user_state: this.state
+                    data: {
+                        user_id: this.id,
+                        user_state: this.state,
+                        is_guest: this.is_guest
+                    }
                 }));
             }
         });
