@@ -8,6 +8,7 @@ class ConnectionsService {
     }
 
     addConnection(user_id, socket) {
+        logger.info(`Clients : ${this.wss.clients.size}`)
         if (this.connections[user_id]) {
             this.connections[user_id].send(JSON.stringify({
                 action: 'error',
