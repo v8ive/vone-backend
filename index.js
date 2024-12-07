@@ -96,6 +96,13 @@ WebSocketServer.on('connection', async (socket, req) => {
             logger.info(message.data)
             return;
         }
+
+        if (data.action === 'ping') {
+            // Respond to ping
+            socket.send(JSON.stringify({
+                action: 'pong'
+            }));
+        }
     };
 
     // Handle client disconnect
