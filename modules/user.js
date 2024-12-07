@@ -78,7 +78,7 @@ class User {
 
         // Broadcast user connection to all clients
         this.server.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN && client !== this.socket) {
+            if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({
                     action: 'user_connected',
                     user_id: this.id,
@@ -94,7 +94,7 @@ class User {
 
         // Broadcast user disconnection to all clients
         this.server.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN && client !== this.socket) {
+            if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({
                     action: 'user_disconnected',
                     user_id: this.id,
