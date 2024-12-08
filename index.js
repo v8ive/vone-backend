@@ -64,13 +64,13 @@ WebSocketServer.on('connection', async (socket, req) => {
 
     const user = new User(user_id, WebSocketServer, socket, stateService);
 
-    // Log connection
-    logger.info(`Client ID : ${user.id}`)
-    logger.info(`Client connected as ${user.state.username}`);
-
     // Initialize user
     await user.initialize();
     user.is_mobile = isMobile;
+    
+    // Log connection
+    logger.info(`Client ID : ${user.id}`)
+    logger.info(`Client connected as ${user.state.username}`);
 
     // Add connection to connections service
     connectionsService.addConnection(user.id, socket);
