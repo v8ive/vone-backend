@@ -13,6 +13,7 @@ const { logger } = require('./modules/logger');
 const healthCheckRoute = require('./routes/healthCheck');
 const ConnectionsService = require('./modules/connectionsService');
 const User = require('./modules/user');
+const StateService = require('./modules/stateService');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -48,6 +49,9 @@ const WebSocketServer = new WebSocket.Server({ server });
 // Initialize Connections Service
 const connectionsService = new ConnectionsService(WebSocketServer);
 
+// Initialize State Service
+const stateService = new StateService(WebSocketServer, connectionsService);
+
 // Handle Client Connection
 WebSocketServer.on('connection', async (socket, req) => {
     // Parse user_id from query string & initialize user
@@ -58,33 +62,21 @@ WebSocketServer.on('connection', async (socket, req) => {
     const userAgent = req.headers['user-agent'];
     const isMobile = /Mobile|Android|iPhone|iPad|iPod/.test(userAgent);
 
-    const user = new User(user_id, WebSocketServer, socket);
-    logger.info(`Client ID : ${user.id}`)
+    const user = new User(user_id, WebSocketServer, socket, stateService);
 
-    // If user is a guest, log connection as guest
-    if (!user_id) {
-        logger.info(`Client connected as guest`);
-        user.is_guest = true;
-    }
+    // Log connection
+    logger.info(`Client ID : ${user.id}`)
+    logger.info(`Client connected as ${user.state.username}`);
 
     // Initialize user
     await user.initialize();
-    user.is_mobile = isMobile
+    user.is_mobile = isMobile;
 
-    // If no user, log connection failed & close socket
-    if (!user) {
-        logger.error(`User initialization failed, closing connection`);
-        socket.close();
-        return;
-    }
-
-    // If user is not a guest, log connection as user
-    if (!user.is_guest) {
-        logger.info(`Client connected as ${user.state.username}`);
-    }
-
-    // Add connection to state service
+    // Add connection to connections service
     connectionsService.addConnection(user.id, socket);
+
+    // Add user state to state service
+    stateService.addUserState(user.id, user.state);
 
     // Update user status to online & broadcast connection
     user.onConnect();
@@ -102,6 +94,8 @@ WebSocketServer.on('connection', async (socket, req) => {
             socket.send(JSON.stringify({
                 action: 'pong'
             }));
+        } else {
+            logger.info(`Received message: ${data.action}`);
         }
     };
 

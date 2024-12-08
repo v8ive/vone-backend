@@ -18,8 +18,6 @@ class ConnectionsService {
                 }
             })
             )
-
-            this.connections[user_id].close();
         }
         this.connections[user_id] = socket;
     }
