@@ -1,3 +1,4 @@
+const { logger } = require("./logger");
 
 
 class StateService {
@@ -33,6 +34,8 @@ class StateService {
     sendUserStates(user_id) {
         const socket = this.connectionsService.getConnection(user_id);
         const userStates = this.getUserStates();
+
+        logger.info(`${userStates}`);
 
         socket.send(JSON.stringify({
             action: 'user_states',
