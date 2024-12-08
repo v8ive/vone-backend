@@ -101,8 +101,6 @@ class User {
                 logger.error('Failed to update user status', error);
                 return false;
             }
-        } else if (status === 'offline') {
-            // Remove guest user from state
         }
 
         this.broadcastState();
@@ -113,6 +111,9 @@ class User {
     onConnect() {
         // Update user status to online
         this.updateStatus('online');
+
+        // Send user states to the new client
+        this.stateService.sendUserStates(this.id);
 
         // Broadcast user connection to all clients
         this.server.clients.forEach(client => {
@@ -159,10 +160,11 @@ class User {
         this.server.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({
-                    action: 'user_state_update',
+                    action: 'user_state',
                     data: {
                         user_id: this.id,
-                        user_state: this.state
+                        user_state: this.state,
+                        is_guest: this.is_guest
                     }
                 }));
             }
