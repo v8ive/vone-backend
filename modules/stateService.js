@@ -35,7 +35,7 @@ class StateService {
         const socket = this.connectionsService.getConnection(user_id);
         const userStates = this.getUserStates();
 
-        logger.info(`${userStates}`);
+        logger.info(`${userStates.forEach(user => logger.info(user))}`);
 
         socket.send(JSON.stringify({
             action: 'user_states',
