@@ -27,7 +27,7 @@ class User {
         if (!this.is_guest) {
             const { data, error } = await supabase
                 .from('users')
-                .select('username, status, last_online')
+                .select('username, status, last_online, profile_picture')
                 .eq('user_id', this.id)
                 .single();
             if (error) {
@@ -42,6 +42,7 @@ class User {
         } else {
             initialData = {
                 username: 'guest-' + this.id.slice(0, 5),
+                profile_picture: null,
                 status: 'online',
                 last_online: new Date().getTime()
             }
@@ -50,6 +51,7 @@ class User {
         // Initialize user state
         this.state = {
             username: initialData.username,
+            profile_picture: initialData.profile_picture,
             status: initialData.status,
             last_online: initialData.last_online,
 
@@ -73,7 +75,7 @@ class User {
         if (status === 'online') {
             statusState = {
                 status,
-                last_online: new Date().getTime()
+                last_online: new Date().getTime(),
             };
         } else if ((status === 'offline' || status === 'away') && this.state.status === 'online') {
             statusState = {
@@ -105,6 +107,27 @@ class User {
 
         this.broadcastState();
         
+        return true;
+    }
+
+    async updateState(partialState) {
+        // Update user state in state
+        this.state = { ...this.state, ...partialState };
+
+        // Update user state in database
+        if (!this.is_guest) {
+            const { error } = await supabase
+                .from('users')
+                .update(partialState)
+                .eq('user_id', this.id);
+            if (error) {
+                logger.error('Failed to update user state', error);
+                return false;
+            }
+        }
+
+        this.broadcastState();
+
         return true;
     }
 
